@@ -4,6 +4,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/dashboard_screen.dart';
+import '../../features/catalog/presentation/catalog_screen.dart';
 import '../../features/catalog/presentation/course_overview_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../widgets/navigation/main_shell.dart';
@@ -35,8 +36,8 @@ final goRouter = GoRouter(
           builder: (context, state) => const CourseOverviewScreen(),
         ),
         GoRoute(
-          path: '/curriculum',
-          builder: (context, state) => const Center(child: Text('Curriculum')),
+          path: '/courses',
+          builder: (context, state) => const CatalogScreen(),
         ),
         GoRoute(
           path: '/library',

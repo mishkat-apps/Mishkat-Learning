@@ -79,7 +79,7 @@ class _Sidebar extends StatelessWidget {
             ),
           ),
           const _NavTile(label: 'Home', icon: Icons.home_outlined, path: '/dashboard'),
-          const _NavTile(label: 'Curriculum', icon: Icons.book_outlined, path: '/curriculum'),
+          const _NavTile(label: 'Courses', icon: Icons.book_outlined, path: '/courses'),
           const _NavTile(label: 'Library', icon: Icons.bookmark_outline, path: '/library'),
           const Spacer(),
           const _NavTile(label: 'Profile', icon: Icons.person_outline, path: '/profile'),
@@ -121,12 +121,12 @@ class _BottomNav extends StatelessWidget {
       unselectedFontSize: 12,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Curriculum'),
+        BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Courses'),
         BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), label: 'Library'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
       onTap: (index) {
-        final paths = ['/dashboard', '/curriculum', '/library', '/profile'];
+        final paths = ['/dashboard', '/courses', '/library', '/profile'];
         context.go(paths[index]);
       },
     );
