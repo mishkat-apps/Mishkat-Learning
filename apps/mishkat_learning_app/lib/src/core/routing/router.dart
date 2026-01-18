@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/home/presentation/dashboard_screen.dart';
+import '../../features/catalog/presentation/course_overview_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../../widgets/navigation/main_shell.dart';
 
 final goRouter = GoRouter(
@@ -23,7 +26,11 @@ final goRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) => const DashboardPlaceholder(),
+          builder: (context, state) => const DashboardScreen(),
+        ),
+        GoRoute(
+          path: '/course/:id',
+          builder: (context, state) => const CourseOverviewScreen(),
         ),
         GoRoute(
           path: '/curriculum',
@@ -35,40 +42,9 @@ final goRouter = GoRouter(
         ),
         GoRoute(
           path: '/profile',
-          builder: (context, state) => const Center(child: Text('Profile')),
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
     ),
   ],
 );
-
-class DashboardPlaceholder extends StatelessWidget {
-  const DashboardPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Assalamu Alaikum, Ahmad',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 24),
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  Text('Dashboard content will go here'),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
