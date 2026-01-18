@@ -1,0 +1,34 @@
+# Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+*.iconset
+*.pks
+
+# Web
+build/web/
+
+# Firebase
+.firebase/
+functions/node_modules/
+functions/lib/
+database-debug.log
+firestore-debug.log
+pubsub-debug.log
+ui-debug.log
+firebase-debug.log
+*.runtimeconfig.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.DS_Store
+
+# Secrets
+.env
+*.secret.json
+service-account-key.json
