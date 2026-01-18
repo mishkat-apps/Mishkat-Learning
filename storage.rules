@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /courses/{courseId}/{allPaths=**} {
+      // Course resources read access
+      allow read: if isSignedIn() && (
+        firestore.get(/databases/(default)/documents/courses/$(courseId)).data.accessType == 'free' ||
+        firestore.exists(/databases/(default)/documents/enrollments/$(request.auth.uid + '_' + courseId)) ||
+        isAdmin()
+      );
+      allow write: if isAdmin();
+    }
+    
+    match /users/{uid}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if request.auth.uid == uid || isAdmin();
+    }
+  }
+}
