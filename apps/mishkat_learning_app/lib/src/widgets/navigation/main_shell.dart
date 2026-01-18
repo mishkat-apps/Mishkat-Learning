@@ -20,7 +20,7 @@ class MainShell extends StatelessWidget {
             child: Scaffold(
               appBar: !isDesktop
                   ? AppBar(
-                      title: const Text('Mishkat'),
+                      title: const Text('Mishkat Learning'),
                       backgroundColor: Colors.white,
                       foregroundColor: AppTheme.secondaryNavy,
                       actions: [
@@ -67,7 +67,7 @@ class _Sidebar extends StatelessWidget {
                   const Icon(Icons.lightbulb, color: AppTheme.accentGold, size: 32),
                   const SizedBox(height: 8),
                   const Text(
-                    'MISHKAT',
+                    'MISHKAT LEARNING',
                     style: TextStyle(
                       color: AppTheme.accentGold,
                       fontWeight: FontWeight.bold,

@@ -25,7 +25,7 @@ class SplashScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'MISHKAT',
+                'MISHKAT LEARNING',
                 style: GoogleFonts.outfit(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

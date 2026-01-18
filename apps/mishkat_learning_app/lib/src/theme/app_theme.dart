@@ -23,26 +23,26 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: surfaceSand,
       textTheme: TextTheme(
-        displayLarge: GoogleFonts.outfit(
+        displayLarge: GoogleFonts.lato(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           color: secondaryNavy,
         ),
-        headlineMedium: GoogleFonts.outfit(
+        headlineMedium: GoogleFonts.lato(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: secondaryNavy,
         ),
-        bodyLarge: GoogleFonts.inter(
+        bodyLarge: GoogleFonts.lato(
           fontSize: 16,
           color: textNavy,
         ),
-        bodyMedium: GoogleFonts.inter(
+        bodyMedium: GoogleFonts.lato(
           fontSize: 14,
           color: textNavy,
         ),
         // Used for Daily Wisdom quotes
-        displaySmall: GoogleFonts.lora(
+        displaySmall: GoogleFonts.playfairDisplay(
           fontSize: 18,
           fontStyle: FontStyle.italic,
           color: primaryEmerald,
@@ -63,7 +63,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.lato(
             fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
@@ -77,7 +77,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          textStyle: GoogleFonts.inter(
+          textStyle: GoogleFonts.lato(
             fontWeight: FontWeight.w600,
             fontSize: 16,
           ),
