@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../theme/app_theme.dart';
+import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class MainShell extends StatelessWidget {
   final Widget child;

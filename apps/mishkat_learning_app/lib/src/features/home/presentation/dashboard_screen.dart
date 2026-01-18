@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'widgets/continue_learning_card.dart';
 import 'widgets/daily_wisdom_card.dart';
 import 'widgets/mishkat_course_card.dart';
-import '../../../../theme/app_theme.dart';
+import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

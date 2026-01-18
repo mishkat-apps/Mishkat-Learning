@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/app_theme.dart';
+import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class CourseOverviewScreen extends StatelessWidget {
   const CourseOverviewScreen({super.key});
@@ -238,8 +238,13 @@ class CourseOverviewScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(24), // Added from the requested change
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10, // Original blurRadius
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: SafeArea(

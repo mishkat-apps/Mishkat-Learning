@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../widgets/common/mishkat_progress_bar.dart';
-import '../../../../theme/app_theme.dart';
+import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class ContinueLearningCard extends StatelessWidget {
   final String courseTitle;
