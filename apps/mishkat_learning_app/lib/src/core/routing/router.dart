@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/dashboard_screen.dart';
 import '../../features/catalog/presentation/course_overview_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -15,11 +17,11 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const Scaffold(body: Center(child: Text('Login Screen'))),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const Scaffold(body: Center(child: Text('Register Screen'))),
+      builder: (context, state) => const RegisterScreen(),
     ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
