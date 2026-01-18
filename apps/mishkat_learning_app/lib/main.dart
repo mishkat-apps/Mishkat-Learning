@@ -18,8 +18,9 @@ class MishkatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Mishkat Learning',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      routerConfig: router,
+      routerConfig: goRouter,
     );
   }
 }
