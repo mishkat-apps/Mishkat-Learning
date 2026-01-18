@@ -15,52 +15,50 @@ class DailyWisdomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              AppTheme.surfaceSand.withOpacity(0.3),
-            ],
-          ),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(28.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.format_quote,
-              color: AppTheme.accentGold,
-              size: 40,
+            // Header Row
+            Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  source.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textGrey,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.share_outlined, size: 20),
+                  onPressed: () {},
+                  color: AppTheme.textGrey,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            
+            // Quote
             Text(
               quote,
-              textAlign: TextAlign.center,
               style: GoogleFonts.lora(
-                fontSize: 20,
+                fontSize: 18,
                 fontStyle: FontStyle.italic,
-                color: AppTheme.primaryEmerald,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 1,
-              width: 80,
-              color: AppTheme.accentGold.withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              source,
-              style: GoogleFonts.outfit(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
                 color: AppTheme.secondaryNavy,
-                letterSpacing: 1.2,
+                height: 1.6,
               ),
             ),
           ],

@@ -30,7 +30,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.8,
       'reviews': 124,
       'duration': '4h 30m',
-      'imageUrl': 'https://placeholder.com/400x300',
+      'imageUrl': 'https://images.unsplash.com/photo-1549675583-93361848bb44?w=400&h=300&fit=crop',
       'category': 'History',
     },
     {
@@ -39,7 +39,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.9,
       'reviews': 89,
       'duration': '6h 15m',
-      'imageUrl': 'https://placeholder.com/401x301',
+      'imageUrl': 'https://images.unsplash.com/photo-1595126730953-2947a24c75ca?w=400&h=300&fit=crop',
       'category': 'Theology',
     },
     {
@@ -48,7 +48,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 5.0,
       'reviews': 56,
       'duration': '10h 0m',
-      'imageUrl': 'https://placeholder.com/402x302',
+      'imageUrl': 'https://images.unsplash.com/photo-1524312674251-872e616c6838?w=400&h=300&fit=crop',
       'category': 'Spirituality',
     },
     {
@@ -57,7 +57,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.7,
       'reviews': 210,
       'duration': '3h 45m',
-      'imageUrl': 'https://placeholder.com/403x303',
+      'imageUrl': 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=400&h=300&fit=crop',
       'category': 'Spirituality',
     },
     {
@@ -66,7 +66,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.9,
       'reviews': 167,
       'duration': '8h 20m',
-      'imageUrl': 'https://placeholder.com/404x304',
+      'imageUrl': 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=300&fit=crop',
       'category': 'Jurisprudence',
     },
     {
@@ -75,7 +75,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.8,
       'reviews': 203,
       'duration': '12h 0m',
-      'imageUrl': 'https://placeholder.com/405x305',
+      'imageUrl': 'https://images.unsplash.com/photo-1515266591878-5a146e9f21f1?w=400&h=300&fit=crop',
       'category': 'History',
     },
     {
@@ -84,7 +84,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 5.0,
       'reviews': 98,
       'duration': '5h 30m',
-      'imageUrl': 'https://placeholder.com/406x306',
+      'imageUrl': 'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&h=300&fit=crop',
       'category': 'Quranic Studies',
     },
     {
@@ -93,7 +93,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       'rating': 4.6,
       'reviews': 142,
       'duration': '7h 15m',
-      'imageUrl': 'https://placeholder.com/407x307',
+      'imageUrl': 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop',
       'category': 'Ethics',
     },
   ];
