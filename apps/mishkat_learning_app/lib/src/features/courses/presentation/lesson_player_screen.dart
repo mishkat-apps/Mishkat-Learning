@@ -72,100 +72,75 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
     
     final courseAsync = ref.watch(courseBySlugProvider(widget.courseSlug));
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Lesson Player',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.slateGrey),
-        leading: BackButton(
-          onPressed: () {
-            // If in a deep link, maybe go back to course overview?
-            // Default back button usually works fine with GoRouter history.
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/courses/${widget.courseSlug}');
+    return courseAsync.when(
+      data: (course) {
+        if (course == null) return const Scaffold(body: Center(child: Text('Course not found')));
+        
+        final lessonsAsync = ref.watch(lessonsProvider(course.id));
+        
+        return lessonsAsync.when(
+          data: (lessons) {
+            if (lessons.isEmpty) return const Scaffold(body: Center(child: Text('No parts found')));
+            
+            Lesson? activeLesson;
+            if (widget.lessonSlug != null) {
+               activeLesson = lessons.where((l) => l.slug == widget.lessonSlug).firstOrNull;
             }
-          },
-        ),
-      ),
-      body: courseAsync.when(
-        data: (course) {
-          if (course == null) return const Center(child: Text('Course not found'));
-          
-          final lessonsAsync = ref.watch(lessonsProvider(course.id));
-          
-          return lessonsAsync.when(
-            data: (lessons) {
-              if (lessons.isEmpty) return const Center(child: Text('No lessons found'));
-              
-              // Resolve active lesson from slug if not already set or if url param dictates it
-              Lesson? activeLesson;
-              if (widget.lessonSlug != null) {
-                 activeLesson = lessons.where((l) => l.slug == widget.lessonSlug).firstOrNull;
-              }
-              // Fallback to first if slug invalid or missing
-              activeLesson ??= lessons.first;
-              _activeLessonId = activeLesson.id;
+            activeLesson ??= lessons.first;
+            _activeLessonId = activeLesson.id;
 
-              return isWide 
+            return Scaffold(
+              backgroundColor: Colors.white,
+              appBar: AppBar(
+                title: Text(
+                  course.title,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.slateGrey,
+                  ),
+                ),
+                backgroundColor: Colors.white,
+                elevation: 0,
+                centerTitle: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.share_outlined, color: AppTheme.slateGrey),
+                    onPressed: () {},
+                  ),
+                ],
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.slateGrey, size: 20),
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/courses/${widget.courseSlug}');
+                    }
+                  },
+                ),
+              ),
+              body: isWide 
                 ? _buildWideLayout(course, lessons, activeLesson)
-                : _buildMobileLayout(course, lessons, activeLesson);
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (err, _) => Center(child: Text('Error loading lessons: $err')),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
-      ),
+                : _buildMobileLayout(course, lessons, activeLesson),
+            );
+          },
+          loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+          error: (err, _) => Scaffold(body: Center(child: Text('Error loading parts: $err'))),
+        );
+      },
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, _) => Scaffold(body: Center(child: Text('Error: $err'))),
     );
   }
 
   Widget _buildWideLayout(Course course, List<Lesson> lessons, Lesson activeLesson) {
+    // Similar to mobile but with side playlist
     return Row(
       children: [
         Expanded(
           flex: 7,
-          child: Column(
-            children: [
-              _buildVideoPlayer(course.id, activeLesson),
-              Expanded(
-                child: Column(
-                  children: [
-                    TabBar(
-                      controller: _tabController,
-                      labelColor: AppTheme.deepEmerald,
-                      unselectedLabelColor: AppTheme.slateGrey,
-                      indicatorColor: AppTheme.deepEmerald,
-                      tabs: const [
-                        Tab(text: 'Overview'),
-                        Tab(text: 'Resources'),
-                        Tab(text: 'Discussion'),
-                      ],
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildOverview(course),
-                          const Center(child: Text('Resources coming soon...')),
-                          const Center(child: Text('Discussion coming soon...')),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          child: _buildScrollableContent(course, lessons, activeLesson),
         ),
         Container(
           width: 380,
@@ -179,28 +154,144 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   }
 
   Widget _buildMobileLayout(Course course, List<Lesson> lessons, Lesson activeLesson) {
+    return _buildScrollableContent(course, lessons, activeLesson);
+  }
+
+  Widget _buildScrollableContent(Course course, List<Lesson> lessons, Lesson activePart) {
+    final partsAsync = ref.watch(lessonPartsProvider((courseId: course.id, lessonId: activePart.id)));
+    final user = ref.watch(authRepositoryProvider).currentUser;
+    final progressAsync = user != null 
+        ? ref.watch(userCourseProgressProvider((uid: user.uid, courseId: course.id)))
+        : const AsyncValue<Map<String, dynamic>>.data(<String, dynamic>{});
+
     return Column(
       children: [
-        _buildVideoPlayer(course.id, activeLesson),
-        TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.deepEmerald,
-          unselectedLabelColor: AppTheme.slateGrey,
-          indicatorColor: AppTheme.deepEmerald,
-          tabs: const [
-            Tab(text: 'Lessons'),
-            Tab(text: 'Overview'),
-            Tab(text: 'Resources'),
+        _buildVideoPlayer(course.id, activePart),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                partsAsync.when(
+                  data: (lessonParts) {
+                    final currentLesson = _getCurrentLesson(lessonParts);
+                    final partIndex = lessons.indexOf(activePart) + 1;
+                    
+                    return Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (currentLesson != null) ...[
+                            Text(
+                              'Lesson ${lessonParts.indexOf(currentLesson) + 1}: ${currentLesson.title}',
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.slateGrey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                          Text(
+                            'Part $partIndex: ${activePart.title}',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: AppTheme.slateGrey.withOpacity(0.5),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _buildModuleProgress(lessonParts, progressAsync.value ?? <String, dynamic>{}),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(height: 100),
+                  error: (e, _) => Text('Error: $e'),
+                ),
+                TabBar(
+                  controller: _tabController,
+                  labelColor: AppTheme.deepEmerald,
+                  unselectedLabelColor: Colors.grey,
+                  indicatorColor: AppTheme.deepEmerald,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14),
+                  tabs: const [
+                    Tab(text: 'Lessons'),
+                    Tab(text: 'Transcript'),
+                    Tab(text: 'Resources'),
+                  ],
+                ),
+                SizedBox(
+                  height: 600, // Fixed height or adjust based on content
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildPlaylist(course.id, lessons, activePart.id),
+                      _buildTranscript(course.id, activePart),
+                      const Center(child: Text('Resources coming soon...')),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  LessonPart? _getCurrentLesson(List<LessonPart> parts) {
+    if (widget.partSlug != null) {
+      return parts.where((p) => p.slug == widget.partSlug).firstOrNull ?? parts.firstOrNull;
+    }
+    return parts.firstOrNull;
+  }
+
+  Widget _buildModuleProgress(List<LessonPart> lessons, Map<String, dynamic> progress) {
+    final completedParts = progress['parts'] as Map<String, dynamic>? ?? {};
+    int completedCount = 0;
+    for (var lesson in lessons) {
+      if (completedParts[lesson.id]?['completed'] == true) {
+        completedCount++;
+      }
+    }
+    
+    final percent = lessons.isEmpty ? 0 : (completedCount / lessons.length * 100).toInt();
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'MODULE PROGRESS',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.slateGrey,
+                letterSpacing: 0.5,
+              ),
+            ),
+            Text(
+              '$percent% complete',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF006B4D),
+              ),
+            ),
           ],
         ),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildPlaylist(course.id, lessons, activeLesson.id),
-              _buildOverview(course),
-              const Center(child: Text('Resources coming soon...')),
-            ],
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: percent / 100,
+            backgroundColor: const Color(0xFF006B4D).withOpacity(0.1),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF006B4D)),
+            minHeight: 6,
           ),
         ),
       ],
@@ -208,34 +299,11 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   }
 
   Widget _buildVideoPlayer(String courseId, Lesson activeLesson) {
-    // Watch parts for the active lesson
     return ref.watch(lessonPartsProvider((courseId: courseId, lessonId: activeLesson.id))).when(
       data: (parts) {
-        if (parts.isEmpty) {
-           return _buildPlaceholder();
-        }
-
-        // Determine active part
-        // 1. If widget.partSlug is set, try to find it
-        // 2. Else if _activePart is set (local state), use it (though usually we sync state -> url -> build)
-        // 3. Else default to first part
-        
-        LessonPart? targetPart;
-        
-        if (widget.partSlug != null) {
-          targetPart = parts.where((p) => p.slug == widget.partSlug).firstOrNull;
-        }
-        
-        // If we haven't found a part yet (slug missing or invalid), fallback to first
-        targetPart ??= parts.first;
-
-        // If the calculated target part is different from state, valid to update state/Url?
-        // Ideally we just render it. The _activePart state might be redundant now if we purely rely on URL + derived data.
-        // But for "Play Sample Video" button we need local state or URL push.
-        
-        // Let's use targetPart for rendering
+        if (parts.isEmpty) return _buildPlaceholder();
+        LessonPart? targetPart = _getCurrentLesson(parts) ?? parts.first;
         if (targetPart.videoUrl == null) return _buildPlaceholder();
-        
         return _buildPlayerContainer(targetPart.videoUrl);
       },
       loading: () => _buildLoadingState(),
@@ -245,7 +313,6 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
 
   Widget _buildPlayerContainer(String? videoUrl) {
     final videoId = Course.extractVimeoId(videoUrl);
-    
     if (videoId == null || videoId.isEmpty) return _buildPlaceholder();
 
     return AspectRatio(
@@ -253,7 +320,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
       child: Container(
         color: Colors.black,
         child: VimeoVideoPlayer(
-          key: ValueKey(videoId), // Force player refresh on ID change
+          key: ValueKey(videoId),
           videoId: videoId,
         ),
       ),
@@ -275,41 +342,8 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
       aspectRatio: 16 / 9,
       child: Container(
         color: Colors.black,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.play_circle_outline, color: Colors.white, size: 64),
-              const SizedBox(height: 16),
-              Text(
-                'Select a lesson to start learning',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _activePart = LessonPart(
-                      id: 'placeholder',
-                      title: 'Start Learning',
-                      order: 0,
-                      duration: '',
-                      type: 'intro',
-                      slug: 'intro',
-                    );
-                  });
-                },
-                icon: const Icon(Icons.science, color: AppTheme.radiantGold),
-                label: Text('Play Sample Video', style: TextStyle(color: AppTheme.radiantGold)),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white10,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-              ),
-            ],
-          ),
+        child: const Center(
+          child: Icon(Icons.play_circle_outline, color: Colors.white, size: 64),
         ),
       ),
     );
@@ -317,58 +351,92 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
 
   Widget _buildPlaylist(String courseId, List<Lesson> lessons, String activeLessonId) {
     return ListView.builder(
+      padding: EdgeInsets.zero,
       itemCount: lessons.length,
       itemBuilder: (context, index) {
         final lesson = lessons[index];
-        return ExpansionTile(
-          initiallyExpanded: lesson.id == activeLessonId,
-          title: Text(
-            lesson.title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppTheme.slateGrey,
-            ),
-          ),
-          subtitle: Text(
-            lesson.duration,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
+        final isExpanded = lesson.id == activeLessonId;
+        
+        return Column(
           children: [
-            _LessonPartList(
-              courseId: courseId,
-              lesson: lesson, 
-              activePartSlug: lesson.id == activeLessonId ? widget.partSlug : null,
-              onPartSelected: (part) => _onPartSelected(part, lesson.id, courseId, lesson.slug),
+            InkWell(
+              onTap: () {
+                // If not expanded, navigate to first part of this lesson
+                if (!isExpanded) {
+                  context.go('/courses/${widget.courseSlug}/${lesson.slug}');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                color: isExpanded ? const Color(0xFFE8F3EF).withOpacity(0.5) : Colors.transparent,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Part ${index + 1}: ${lesson.title}',
+                            style: GoogleFonts.inter(
+                              fontWeight: isExpanded ? FontWeight.bold : FontWeight.w500,
+                              color: AppTheme.slateGrey,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            lesson.duration,
+                            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
+              ),
             ),
+            if (isExpanded)
+              _LessonPartList(
+                courseId: courseId,
+                lesson: lesson, 
+                activePartSlug: widget.partSlug,
+                onPartSelected: (part) => _onPartSelected(part, lesson.id, courseId, lesson.slug),
+                courseSlug: widget.courseSlug,
+              ),
+            const Divider(height: 1, color: Color(0xFFF0F0F0)),
           ],
         );
       },
     );
   }
 
-  Widget _buildOverview(Course course) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            course.title,
-            style: GoogleFonts.montserrat(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget _buildTranscript(String courseId, Lesson activePart) {
+    final partsAsync = ref.watch(lessonPartsProvider((courseId: courseId, lessonId: activePart.id)));
+    
+    return partsAsync.when(
+      data: (parts) {
+        final currentPart = _getCurrentLesson(parts);
+        if (currentPart == null || currentPart.transcript == null || currentPart.transcript!.isEmpty) {
+          return const Center(child: Text('No transcript available for this lesson.'));
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            currentPart.transcript!,
+            style: GoogleFonts.inter(
+              height: 1.6,
+              fontSize: 15,
               color: AppTheme.slateGrey,
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            course.description,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              height: 1.6,
-              color: AppTheme.slateGrey.withValues(alpha: 0.8),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (_, __) => const Center(child: Text('Error loading transcript')),
     );
   }
 }
@@ -378,46 +446,135 @@ class _LessonPartList extends ConsumerWidget {
   final Lesson lesson;
   final String? activePartSlug;
   final Function(LessonPart) onPartSelected;
+  final String courseSlug;
 
   const _LessonPartList({
     required this.courseId,
     required this.lesson,
     required this.activePartSlug,
     required this.onPartSelected,
+    required this.courseSlug,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final partsAsync = ref.watch(lessonPartsProvider((courseId: courseId, lessonId: lesson.id)));
+    final user = ref.watch(authRepositoryProvider).currentUser;
+    final progressAsync = user != null 
+        ? ref.watch(userCourseProgressProvider((uid: user.uid, courseId: courseId)))
+        : const AsyncValue<Map<String, dynamic>>.data(<String, dynamic>{});
 
     return partsAsync.when(
       data: (parts) {
-        return Column(
-          children: parts.map((part) {
-            // Determine active based on slug if provided
-            final isActive = activePartSlug != null && part.slug == activePartSlug;
-            
-            return ListTile(
-              leading: Icon(
-                isActive ? Icons.play_circle_fill : Icons.play_circle_outline,
-                color: isActive ? AppTheme.deepEmerald : Colors.grey,
-              ),
-              title: Text(
-                part.title,
-                style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  color: isActive ? AppTheme.deepEmerald : AppTheme.slateGrey,
+        return Container(
+          color: const Color(0xFFE8F3EF).withOpacity(0.5),
+          child: Column(
+            children: parts.map((part) {
+              final index = parts.indexOf(part) + 1;
+              final isActive = (activePartSlug == null && index == 1) || part.slug == activePartSlug;
+              final completedParts = progressAsync.value?['parts'] as Map<String, dynamic>? ?? <String, dynamic>{};
+              final isCompleted = completedParts[part.id]?['completed'] == true;
+              
+              return InkWell(
+                onTap: () => onPartSelected(part),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isCompleted ? const Color(0xFF006B4D) : Colors.grey.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          color: isCompleted ? const Color(0xFF006B4D) : Colors.transparent,
+                        ),
+                        child: Center(
+                          child: isCompleted 
+                            ? const Icon(Icons.check, size: 16, color: Colors.white)
+                            : Text(
+                                '$index',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$index. ${part.title}',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                                color: AppTheme.slateGrey,
+                                decoration: isCompleted ? TextDecoration.lineThrough : null,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Text(
+                                  '${part.duration} • ',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                Text(
+                                  isActive ? 'Now Playing' : (isCompleted ? 'Completed' : ''),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: isActive ? const Color(0xFF006B4D) : Colors.grey,
+                                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isActive)
+                        const Icon(Icons.bar_chart, color: Color(0xFF006B4D))
+                      else if (isCompleted)
+                         const Icon(Icons.play_circle_fill, color: Colors.grey)
+                      else
+                        const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
+                      
+                      // MARK AS COMPLETE BUTTON (UI only for now, logic needs to be connected)
+                      if (isActive && !isCompleted)
+                        IconButton(
+                          icon: const Icon(Icons.check_circle_outline, color: Color(0xFF006B4D)),
+                          onPressed: () {
+                            if (user != null) {
+                              ref.read(progressRepositoryProvider).updatePartProgress(
+                                uid: user.uid,
+                                courseId: courseId,
+                                lessonId: lesson.id,
+                                partId: part.id,
+                                completed: true,
+                              );
+                            }
+                          },
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              trailing: Text(part.duration, style: const TextStyle(fontSize: 11)),
-              onTap: () => onPartSelected(part),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         );
       },
-      loading: () => const Padding(padding: EdgeInsets.all(8.0), child: CircularProgressIndicator()),
-      error: (_, __) => const Text('Error loading parts'),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

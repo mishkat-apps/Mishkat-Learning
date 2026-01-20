@@ -147,7 +147,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                   const SizedBox(height: 32),
                   _buildInstructorBio(course),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Syllabus'),
+                  _buildSectionTitle('Course Outline'),
                   const SizedBox(height: 16),
                   _buildOutlineList(context, course),
                   const SizedBox(height: 120), // Bottom padding for sticky bar
@@ -543,7 +543,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
               ),
             ),
             subtitle: Text(
-              '${parts.length} Lessons • ${lesson.duration}',
+              '${parts.length} Parts • ${lesson.duration}',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: AppTheme.slateGrey.withValues(alpha: 0.6),

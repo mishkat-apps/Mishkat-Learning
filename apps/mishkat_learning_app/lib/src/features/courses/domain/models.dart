@@ -56,7 +56,7 @@ class Course {
       slug: data['slug'] ?? '',
       category: data['category'] ?? '',
       lessonCount: data['lessonCount'] ?? 0,
-      description: data['description'] ?? '',
+      description: data['about'] ?? data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       instructorId: data['instructorId'] ?? '',
       instructorName: data['instructorName'] ?? data['instructor'] ?? '',
@@ -118,6 +118,7 @@ class LessonPart {
   final String duration;
   final String? videoUrl;
   final String type; // 'video', 'quiz', 'reading'
+  final String? transcript;
 
   LessonPart({
     required this.id,
@@ -127,6 +128,7 @@ class LessonPart {
     required this.duration,
     this.videoUrl,
     required this.type,
+    this.transcript,
   });
 
   factory LessonPart.fromFirestore(DocumentSnapshot doc) {
@@ -139,6 +141,7 @@ class LessonPart {
       duration: data['duration'] ?? '',
       videoUrl: data['videoUrl'],
       type: data['type'] ?? 'video',
+      transcript: data['transcript'],
     );
   }
 }

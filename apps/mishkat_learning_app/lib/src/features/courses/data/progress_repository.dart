@@ -52,6 +52,30 @@ class ProgressRepository {
     }, SetOptions(merge: true));
   }
 
+  Future<void> updatePartProgress({
+    required String uid,
+    required String courseId,
+    required String lessonId,
+    required String partId,
+    required bool completed,
+  }) async {
+    final docRef = _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('progress')
+        .doc(courseId);
+
+    await docRef.set({
+      'parts': {
+        partId: {
+          'completed': completed,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        }
+      },
+      'lastUpdated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   Future<void> enrollUser({
     required String uid,
     required String courseId,
