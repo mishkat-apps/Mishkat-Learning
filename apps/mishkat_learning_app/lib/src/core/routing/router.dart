@@ -42,7 +42,7 @@ final goRouter = GoRouter(
           builder: (context, state) => const DashboardScreen(),
         ),
         GoRoute(
-          path: '/browse',
+          path: '/courses',
           builder: (context, state) => const CatalogScreen(),
           routes: [
             GoRoute(
@@ -53,15 +53,35 @@ final goRouter = GoRouter(
               },
               routes: [
                 GoRoute(
-                  path: 'lessons/:lessonSlug',
+                  path: ':lessonSlug',
                   builder: (context, state) {
                     final courseSlug = state.pathParameters['courseSlug']!;
                     final lessonSlug = state.pathParameters['lessonSlug']!;
+                    // Optional partSlug query param or path?
+                    // User requested: courses/<coursenameslug>/<lessonnameslug>/<partnameslug>
+                    // So we should have a sub-route or capture it here.
+                    // But if we want it optional, we might need a sub-route.
+                    // Let's make it a sub-route for cleaner history.
                     return LessonPlayerScreen(
                       courseSlug: courseSlug,
                       lessonSlug: lessonSlug,
                     );
                   },
+                  routes: [
+                     GoRoute(
+                      path: ':partSlug',
+                      builder: (context, state) {
+                        final courseSlug = state.pathParameters['courseSlug']!;
+                        final lessonSlug = state.pathParameters['lessonSlug']!;
+                        final partSlug = state.pathParameters['partSlug']!;
+                        return LessonPlayerScreen(
+                          courseSlug: courseSlug,
+                          lessonSlug: lessonSlug,
+                          partSlug: partSlug,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

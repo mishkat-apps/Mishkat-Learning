@@ -39,7 +39,7 @@ class MishkatCourseCard extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.push('/browse/$slug'),
+          onTap: () => context.push('/courses/$slug'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -91,11 +91,9 @@ class MishkatCourseCard extends StatelessWidget {
                           ),
                           child: Text(
                             category!.toUpperCase(),
-                            style: GoogleFonts.montserrat(
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontSize: 9,
-                              fontWeight: FontWeight.bold,
                               color: AppTheme.deepEmerald,
-                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -115,9 +113,7 @@ class MishkatCourseCard extends StatelessWidget {
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppTheme.slateGrey,
                         height: 1.25,
                       ),
@@ -138,9 +134,9 @@ class MishkatCourseCard extends StatelessWidget {
                             instructor,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 11,
-                                    color: AppTheme.slateGrey,
+                              color: AppTheme.slateGrey,
                             ),
                           ),
                         ),
@@ -161,9 +157,9 @@ class MishkatCourseCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               lessonCount!,
-                              style: GoogleFonts.inter(
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontSize: 11,
-                                      color: AppTheme.slateGrey,
+                                color: AppTheme.slateGrey,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -182,7 +178,7 @@ class MishkatCourseCard extends StatelessWidget {
                               ),
                               child: Text(
                                 level!.toUpperCase(),
-                                style: GoogleFonts.inter(
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                   color: _getLevelColor(level!),
@@ -204,15 +200,15 @@ class MishkatCourseCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             rating.toString(),
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.bold,
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontSize: 12,
+                              color: Colors.black,
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '($reviews)',
-                            style: GoogleFonts.inter(
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontSize: 11,
                               color: AppTheme.slateGrey,
                             ),

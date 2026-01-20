@@ -3,107 +3,142 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Brand Colors
-  
-  static const deepEmerald = Color(0xFF0E6B5B);
-  static const secondaryNavy = Color(0xFF0B1324);
-  static const midnightNavy = Color(0xFF0B1324);
-  static const radiantGold = Color(0xFFC8A24A);
-  static const softGold = Color(0xFFE5C171);
-  static const sacredCream = Color(0xFFF4F0E6);
+  static const deepEmerald = Color(0xFF064e3b); // primary
+  static const primaryAccent = Color(0xFF065f46);
+  static const backgroundLight = Color(0xFFfcfaf7); // cream/paper
+  static const backgroundDark = Color(0xFF0a1a15);
+  static const accentEmerald = Color(0xFF14532d);
+  static const radiantGold = Color(0xFFa38d5d); // gold-accent
+  static const goldLight = Color(0xFFd4c5a3); // gold-light
   static const slateGrey = Color(0xFF2D3436);
-  
-  // Mapping old names to new palette to minimize refactoring impact, or updating deprecated names where possible.
-  // Better to update values.
-  
-  // Primary (Deep Emerald)
-  // Secondary (Slate Grey) - Note: old was "Midnight Navy" #0B1324. New Slate is #2D3436 (Lighter).
-  // Accent (Radiant Gold)
-  // Surface (Sacred Cream)
-  
+  static const surface = Colors.white;
+
+  // Legacy/Restored Colors (to fix breaking changes)
+  static const sacredCream = Color(0xFFF4F0E6);
+  static const secondaryNavy = Color(0xFF0B1324);
+  static const softGold = Color(0xFFE5C171);
+
+  // Semantic Aliases
+  static const primary = deepEmerald;
+  static const secondary = slateGrey;
+  static const tertiary = radiantGold;
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: backgroundLight,
       colorScheme: ColorScheme.fromSeed(
         seedColor: deepEmerald,
         primary: deepEmerald,
         secondary: slateGrey,
-        surface: sacredCream,
+        surface: backgroundLight,
         onSurface: slateGrey,
         tertiary: radiantGold,
+        background: backgroundLight,
       ),
-      scaffoldBackgroundColor: sacredCream,
+      fontFamily: GoogleFonts.inter().fontFamily,
       textTheme: TextTheme(
-        // Primary Headings: Montserrat
-        displayLarge: GoogleFonts.montserrat(
+        // Primary Headings: Inter (Design uses Inter for display)
+        displayLarge: GoogleFonts.inter(
           fontSize: 32,
           fontWeight: FontWeight.bold,
-          color: deepEmerald, // Headers often Deep Emerald
+          color: deepEmerald,
+          letterSpacing: -0.5,
         ),
-        headlineMedium: GoogleFonts.montserrat(
+        displayMedium: GoogleFonts.inter(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: deepEmerald,
+          letterSpacing: -0.5,
+        ),
+        displaySmall: GoogleFonts.playfairDisplay( // Serif for specialized headers
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: deepEmerald,
         ),
-        // Secondary/Body: Inter
+        // Headlines
+        headlineMedium: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: deepEmerald,
+        ),
+        // Body: Inter
         bodyLarge: GoogleFonts.inter(
           fontSize: 16,
           color: slateGrey,
+          height: 1.5,
         ),
         bodyMedium: GoogleFonts.inter(
           fontSize: 14,
           color: slateGrey,
+          height: 1.5,
         ),
-        // Quotes/Arabic: Amiri
-        displaySmall: GoogleFonts.amiri(
-          fontSize: 20, // Slightly larger for intricate script
-          fontStyle: FontStyle.italic,
-          color: deepEmerald,
-          height: 1.8,
+        labelLarge: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
         ),
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent, // Or Deep Emerald if we want filled header? "Header backgrounds... Deep Emerald". But let's keep it transparent for cleaner look on dashboard, or maybe updated later.
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: deepEmerald),
-        titleTextStyle: GoogleFonts.montserrat(color: deepEmerald, fontWeight: FontWeight.bold, fontSize: 20),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: deepEmerald,
           foregroundColor: Colors.white,
-          elevation: 4, // "Slight shine" / shadow
-          shadowColor: Color(0x1406402B), // Soft shadow
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14), // 12-16px range
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          textStyle: GoogleFonts.montserrat(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          textStyle: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 14,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: deepEmerald,
-          side: const BorderSide(color: deepEmerald, width: 2),
+          side: const BorderSide(color: deepEmerald, width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          textStyle: GoogleFonts.montserrat(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          textStyle: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 14,
           ),
         ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: deepEmerald, width: 1.5),
+        ),
+        hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
+      ),
       cardTheme: CardThemeData(
-        color: Colors.white, // Or slightly off-white if sticking to cream theme? "Lifted feel above the cream background" implies card is likely white.
-        elevation: 4,
-        shadowColor: Color(0x1406402B), // Soft blurred shadow
+        color: Colors.white,
+        elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.withOpacity(0.1)),
         ),
       ),
     );

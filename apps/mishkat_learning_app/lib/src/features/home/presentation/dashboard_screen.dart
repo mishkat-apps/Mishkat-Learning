@@ -64,11 +64,8 @@ class DashboardScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'MISHKAT LEARNING',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: AppTheme.radiantGold,
-                          letterSpacing: 0.5,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -78,9 +75,7 @@ class DashboardScreen extends ConsumerWidget {
                           return profileAsync.when(
                             data: (profile) => Text(
                               'Salam Alaykum, ${profile?.displayName.split(' ')[0] ?? 'Seeker'}',
-                              style: GoogleFonts.playfairDisplay(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 color: Colors.black,
                               ),
                             ),
@@ -145,17 +140,14 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Continue Learning',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Colors.black,
                   ),
                 ),
                 Text(
                   'In Progress',
-                  style: GoogleFonts.inter(
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
                     color: AppTheme.deepEmerald,
                   ),
                 ),
@@ -198,7 +190,7 @@ class DashboardScreen extends ConsumerWidget {
                               currentLesson: 'Next Part', // Placeholder for now
                               progress: progress,
                               imageUrl: course.imageUrl,
-                              onPressed: () => context.push('/browse/${course.slug}'),
+                              onPressed: () => context.push('/courses/${course.slug}'),
                             );
                           },
                           loading: () => const Center(child: CircularProgressIndicator()),
@@ -217,9 +209,7 @@ class DashboardScreen extends ConsumerWidget {
             // Daily Wisdom Section Header
             Text(
               'Daily Wisdom',
-              style: GoogleFonts.montserrat(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.black,
               ),
             ),
@@ -233,7 +223,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 40),
 
             // Featured Courses
-            _buildSectionHeader('Explore More Categories', 'Browse All'),
+            _buildSectionHeader(context, 'Explore More Categories', 'Browse All'),
             const SizedBox(height: 16),
             coursesAsync.when(
               data: (courses) => SizedBox(
@@ -262,7 +252,7 @@ class DashboardScreen extends ConsumerWidget {
             const SizedBox(height: 40),
 
             // New Additions
-            _buildSectionHeader('New Additions', 'See all'),
+            _buildSectionHeader(context, 'New Additions', 'See all'),
             const SizedBox(height: 16),
             coursesAsync.when(
               data: (courses) => SizedBox(
@@ -298,15 +288,13 @@ class DashboardScreen extends ConsumerWidget {
   );
 }
 
-  Widget _buildSectionHeader(String title, String actionText) {
+  Widget _buildSectionHeader(BuildContext context, String title, String actionText) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: GoogleFonts.montserrat(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: AppTheme.deepEmerald,
           ),
         ),
@@ -314,9 +302,8 @@ class DashboardScreen extends ConsumerWidget {
           onPressed: () {},
           child: Text(
             actionText,
-            style: GoogleFonts.inter(
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               fontSize: 13,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -338,7 +325,10 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Sign in to track your progress',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.secondaryNavy,
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -364,17 +354,22 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Start your learning journey',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.secondaryNavy,
+            ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "You haven't enrolled in any courses yet.",
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.slateGrey, fontSize: 13),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 20),
           OutlinedButton(
-            onPressed: () => context.push('/browse'),
+            onPressed: () => context.go('/courses'),
             child: const Text('Browse Courses'),
           ),
         ],

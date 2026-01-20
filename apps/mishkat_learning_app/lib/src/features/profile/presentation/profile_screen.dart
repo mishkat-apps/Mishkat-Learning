@@ -85,7 +85,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 16),
                       Text(
                         profile.displayName,
-                        style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontSize: 24,
+                          color: Colors.black,
+                        ),
                       ),
                       Text(
                         profile.role == 'admin' ? 'Administrator' : 'Dedicated Seeker of Knowledge', 
@@ -188,7 +191,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         child: Column(
           children: [
-            Text(value, style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.deepEmerald)),
+            Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: AppTheme.deepEmerald,
+            )),
             Text(label, style: const TextStyle(color: AppTheme.slateGrey, fontSize: 12)),
           ],
         ),
@@ -213,7 +218,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const Spacer(),
           const Icon(Icons.download_outlined, color: Colors.white70, size: 20),
@@ -227,7 +235,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold),
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: Colors.black,
+        ),
       ),
     );
   }

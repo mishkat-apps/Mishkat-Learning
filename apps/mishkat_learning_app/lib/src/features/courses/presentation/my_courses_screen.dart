@@ -24,16 +24,33 @@ class MyCoursesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/dashboard'),
+        ),
+        centerTitle: true,
         title: Text(
-          'My Courses',
-          style: GoogleFonts.montserrat(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.slateGrey,
+          'MY COURSES',
+          style: GoogleFonts.inter(
+            color: AppTheme.radiantGold, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 18,
+            letterSpacing: 1.0,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded, color: Colors.black),
+            onPressed: () {
+               // Notification Action
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
         elevation: 0,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: AppTheme.slateGrey),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: coursesAsync.when(
         data: (courses) {
@@ -77,7 +94,7 @@ class _CourseEnrollmentCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          onTap: () => context.go('/browse/${course.slug}'),
+          onTap: () => context.push('/courses/${course.slug}'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,7 +159,7 @@ class _CourseEnrollmentCard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => context.go('/browse/${course.slug}'),
+                        onPressed: () => context.push('/courses/${course.slug}'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.deepEmerald,
                           foregroundColor: Colors.white,

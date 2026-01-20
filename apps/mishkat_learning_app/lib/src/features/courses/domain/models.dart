@@ -20,6 +20,8 @@ class Course {
   final List<String> subjectAreas;
   final bool isFree;
   final double price;
+  final bool isPopular;
+  final bool isNew;
   final String? videoUrl;
 
   Course({
@@ -41,6 +43,8 @@ class Course {
     required this.subjectAreas,
     required this.isFree,
     required this.price,
+    this.isPopular = false,
+    this.isNew = false,
     this.videoUrl,
   });
 
@@ -55,7 +59,7 @@ class Course {
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       instructorId: data['instructorId'] ?? '',
-      instructorName: data['instructorName'] ?? '',
+      instructorName: data['instructorName'] ?? data['instructor'] ?? '',
       rating: (data['rating'] ?? 0.0).toDouble(),
       reviews: data['reviews'] ?? 0,
       studentsCount: data['studentsCount'] ?? 0,
@@ -65,8 +69,17 @@ class Course {
       subjectAreas: List<String>.from(data['subjectAreas'] ?? []),
       isFree: data['isFree'] ?? false,
       price: (data['price'] ?? 0.0).toDouble(),
+      isPopular: data['isPopular'] ?? false,
+      isNew: data['isNew'] ?? false,
       videoUrl: data['videoUrl'],
     );
+  }
+
+  static String? extractVimeoId(String? url) {
+    if (url == null) return null;
+    final regExp = RegExp(r'vimeo\.com\/(?:.*#|.*videos\/)?([0-9]+)');
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
   }
 }
 
@@ -100,6 +113,7 @@ class Lesson {
 class LessonPart {
   final String id;
   final String title;
+  final String slug;
   final int order;
   final String duration;
   final String? videoUrl;
@@ -108,6 +122,7 @@ class LessonPart {
   LessonPart({
     required this.id,
     required this.title,
+    required this.slug,
     required this.order,
     required this.duration,
     this.videoUrl,
@@ -119,6 +134,7 @@ class LessonPart {
     return LessonPart(
       id: doc.id,
       title: data['title'] ?? '',
+      slug: data['slug'] ?? '',
       order: data['order'] ?? 0,
       duration: data['duration'] ?? '',
       videoUrl: data['videoUrl'],

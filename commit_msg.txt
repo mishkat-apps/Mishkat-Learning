@@ -1,0 +1,26 @@
+# Branch: main
+
+## Changes
+- Revamped `CourseOverviewScreen` with a single scrolling view, premium video hero, course header, and detailed sections (About, Syllabus, Instructor Bio).
+- Standardized headers across `CatalogScreen` and `MyCoursesScreen`.
+- Implemented search functionality in `CatalogScreen` and refined layout.
+- Added notification bell to headers and improved navigation consistency.
+- Fixed routing issues in `LessonPlayerScreen` and `router.dart`.
+- Updated typography and theme constants for a more premium look.
+- Cleaned up temporary error files.
+
+## Files Modified
+- `apps/mishkat_learning_app/lib/src/core/constants/app_constants.dart`
+- `apps/mishkat_learning_app/lib/src/core/routing/router.dart`
+- `apps/mishkat_learning_app/lib/src/features/catalog/presentation/catalog_screen.dart`
+- `apps/mishkat_learning_app/lib/src/features/catalog/presentation/course_overview_screen.dart`
+- `apps/mishkat_learning_app/lib/src/features/courses/domain/models.dart`
+- `apps/mishkat_learning_app/lib/src/features/courses/presentation/lesson_player_screen.dart`
+- `apps/mishkat_learning_app/lib/src/features/courses/presentation/my_courses_screen.dart`
+- `apps/mishkat_learning_app/lib/src/features/home/presentation/dashboard_screen.dart`
+- `apps/mishkat_learning_app/lib/src/features/home/presentation/widgets/daily_wisdom_card.dart`
+- `apps/mishkat_learning_app/lib/src/features/home/presentation/widgets/mishkat_course_card.dart`
+- `apps/mishkat_learning_app/lib/src/features/profile/presentation/profile_screen.dart`
+- `apps/mishkat_learning_app/lib/src/theme/app_theme.dart`
+- `apps/mishkat_learning_app/lib/src/widgets/navigation/main_shell.dart`
+- `docs/catalogdesign.txt` (NEW)

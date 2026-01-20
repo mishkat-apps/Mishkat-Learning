@@ -59,12 +59,12 @@ class _Sidebar extends StatelessWidget {
               ),
             ),
           ),
-          const _NavTile(label: 'Home', icon: Icons.home_outlined, path: '/dashboard'),
-          const _NavTile(label: 'Browse', icon: Icons.book_outlined, path: '/browse'),
-          const _NavTile(label: 'My Courses', icon: Icons.bookmark_outline, path: '/my-courses'),
+          const _NavTile(label: 'Dashboard', icon: Icons.dashboard_outlined, path: '/dashboard'),
+          const _NavTile(label: 'Catalog', icon: Icons.menu_book_outlined, path: '/courses'),
+          const _NavTile(label: 'My Courses', icon: Icons.school_outlined, path: '/my-courses'),
           const _NavTile(label: 'Style Guide', icon: Icons.palette_outlined, path: '/style-guide'),
           const Spacer(),
-          const _NavTile(label: 'Profile', icon: Icons.person_outline, path: '/profile'),
+          const _NavTile(label: 'Profile', icon: Icons.account_circle_outlined, path: '/profile'),
           const SizedBox(height: 20),
         ],
       ),
@@ -102,13 +102,13 @@ class _BottomNav extends StatelessWidget {
       selectedFontSize: 12,
       unselectedFontSize: 12,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.book_outlined), label: 'Browse'),
-        BottomNavigationBarItem(icon: Icon(Icons.bookmark_outline), label: 'My Courses'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
+        BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: 'Catalog'),
+        BottomNavigationBarItem(icon: Icon(Icons.school_outlined), label: 'My Courses'),
+        BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: 'Profile'),
       ],
       onTap: (index) {
-        final paths = ['/dashboard', '/browse', '/my-courses', '/profile'];
+        final paths = ['/dashboard', '/courses', '/my-courses', '/profile'];
         context.go(paths[index]);
       },
     );

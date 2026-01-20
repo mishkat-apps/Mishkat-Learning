@@ -34,11 +34,8 @@ class DailyWisdomCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   source.toUpperCase(),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppTheme.slateGrey,
-                    letterSpacing: 1,
                   ),
                 ),
                 const Spacer(),
@@ -54,9 +51,7 @@ class DailyWisdomCard extends StatelessWidget {
             // Quote
             Text(
               quote,
-              style: GoogleFonts.amiri(
-                fontSize: 18,
-                fontStyle: FontStyle.italic,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 color: AppTheme.deepEmerald,
                 height: 1.6,
               ),
