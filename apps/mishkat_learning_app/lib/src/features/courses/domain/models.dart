@@ -4,11 +4,15 @@ class Course {
   final String id;
   final String title;
   final String slug;
+  final String category;
+  final int lessonCount;
   final String description;
   final String imageUrl;
   final String instructorId;
   final String instructorName;
+  String get instructor => instructorName;
   final double rating;
+  final int reviews;
   final int studentsCount;
   final String duration;
   final String level;
@@ -22,11 +26,14 @@ class Course {
     required this.id,
     required this.title,
     required this.slug,
+    required this.category,
+    required this.lessonCount,
     required this.description,
     required this.imageUrl,
     required this.instructorId,
     required this.instructorName,
     required this.rating,
+    required this.reviews,
     required this.studentsCount,
     required this.duration,
     required this.level,
@@ -43,11 +50,14 @@ class Course {
       id: doc.id,
       title: data['title'] ?? '',
       slug: data['slug'] ?? '',
+      category: data['category'] ?? '',
+      lessonCount: data['lessonCount'] ?? 0,
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       instructorId: data['instructorId'] ?? '',
       instructorName: data['instructorName'] ?? '',
       rating: (data['rating'] ?? 0.0).toDouble(),
+      reviews: data['reviews'] ?? 0,
       studentsCount: data['studentsCount'] ?? 0,
       duration: data['duration'] ?? '',
       level: data['level'] ?? '',

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vimeo_video_player/vimeo_video_player.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/progress_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/domain/models.dart';
-import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
+import '../../../theme/app_theme.dart';
+import '../data/course_repository.dart';
+import '../data/progress_repository.dart';
+import '../domain/models.dart';
+import '../../auth/data/auth_repository.dart';
 import 'package:flutter/services.dart';
 
 class LessonPlayerScreen extends ConsumerStatefulWidget {
@@ -143,7 +143,9 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
         ),
         Container(
           width: 380,
-          border: const Border(left: BorderSide(color: Color(0xFFF0F0F0))),
+          decoration: const BoxDecoration(
+            border: Border(left: BorderSide(color: Color(0xFFF0F0F0))),
+          ),
           child: _buildPlaylist(courseId, lessons),
         ),
       ],
@@ -205,11 +207,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: VimeoVideoPlayer(
-        vimeoPlayerModel: VimeoPlayerModel(
-          url: _activePart!.videoUrl!,
-          deviceOrientation: DeviceOrientation.landscapeLeft,
-          systemUiOverlay: const [],
-        ),
+        videoId: _activePart!.videoUrl!.split('/').last,
       ),
     );
   }

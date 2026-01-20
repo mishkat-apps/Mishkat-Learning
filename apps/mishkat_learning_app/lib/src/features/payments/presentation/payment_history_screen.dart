@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
-import 'package:mishkat_learning_app/src/features/payments/data/payment_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
+import '../../../theme/app_theme.dart';
+import '../../auth/data/auth_repository.dart';
+import '../data/payment_repository.dart';
+import '../../courses/data/course_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PaymentHistoryScreen extends ConsumerWidget {

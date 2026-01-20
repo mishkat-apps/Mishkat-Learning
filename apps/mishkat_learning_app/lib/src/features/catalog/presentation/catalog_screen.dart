@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-import 'package:mishkat_learning_app/src/core/constants/app_constants.dart';
+import '../../../theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
+import '../../courses/data/course_repository.dart';
 
 class CatalogScreen extends ConsumerStatefulWidget {
   const CatalogScreen({super.key});

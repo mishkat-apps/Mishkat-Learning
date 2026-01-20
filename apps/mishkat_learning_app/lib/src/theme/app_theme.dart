@@ -6,9 +6,11 @@ class AppTheme {
   
   static const deepEmerald = Color(0xFF0E6B5B);
   static const secondaryNavy = Color(0xFF0B1324);
+  static const midnightNavy = Color(0xFF0B1324);
   static const radiantGold = Color(0xFFC8A24A);
+  static const softGold = Color(0xFFE5C171);
   static const sacredCream = Color(0xFFF4F0E6);
-  static const slateGrey = Color(0xFF2D3436); // Keeping for backward compatibility or secondary text if needed
+  static const slateGrey = Color(0xFF2D3436);
   
   // Mapping old names to new palette to minimize refactoring impact, or updating deprecated names where possible.
   // Better to update values.

@@ -1,0 +1,54 @@
+﻿Analyzing mishkat_learning_app...                               
+
+warning - Unused import: 'src/core/services/migration_service.dart' - lib\main.dart:7:8 - unused_import
+warning - Unused import: 'package:flutter/material.dart' - lib\src\core\routing\router.dart:1:8 - unused_import
+warning - Unused import: 'package:cloud_firestore/cloud_firestore.dart' - lib\src\core\services\migration_service.dart:1:8 - unused_import
+   info - Don't invoke 'print' in production code - lib\src\core\services\migration_service.dart:7:5 - avoid_print
+warning - Unused import: 'package:mishkat_learning_app/src/features/courses/domain/models.dart' - lib\src\features\auth\data\auth_repository.dart:6:8 - unused_import
+   info - Don't invoke 'print' in production code - lib\src\features\auth\data\user_repository.dart:92:5 - avoid_print
+  error - Target of URI doesn't exist: 'package:mishkat_learning_app/src/core/constants/app_constants.dart' - lib\src\features\catalog\presentation\catalog_screen.dart:5:8 - uri_does_not_exist
+  error - Undefined name 'AppConstants' - lib\src\features\catalog\presentation\catalog_screen.dart:21:36 - undefined_identifier
+  error - The named parameter 'onExternalWallet' is required, but there's no corresponding argument - lib\src\features\catalog\presentation\course_overview_screen.dart:32:43 - missing_required_argument
+  error - The named parameter 'onFailure' is required, but there's no corresponding argument - lib\src\features\catalog\presentation\course_overview_screen.dart:32:43 - missing_required_argument
+  error - The named parameter 'onSuccess' is required, but there's no corresponding argument - lib\src\features\catalog\presentation\course_overview_screen.dart:32:43 - missing_required_argument
+  error - Too many positional arguments: 0 expected, but 3 found - lib\src\features\catalog\presentation\course_overview_screen.dart:33:9 - extra_positional_arguments_could_be_named
+  error - The getter 'about' isn't defined for the type 'Course' - lib\src\features\catalog\presentation\course_overview_screen.dart:290:18 - undefined_getter
+  error - The method 'lessonsStreamProvider' isn't defined for the type '_CourseOverviewScreenState' - lib\src\features\catalog\presentation\course_overview_screen.dart:327:22 - undefined_method
+  error - The method 'lessonPartsStreamProvider' isn't defined for the type '_CourseOverviewScreenState' - lib\src\features\catalog\presentation\course_overview_screen.dart:472:22 - undefined_method
+warning - The receiver can't be null, so the null-aware operator '?.' is unnecessary - lib\src\features\catalog\presentation\course_overview_screen.dart:526:61 - invalid_null_aware_operator
+  error - The method 'lessonsStreamProvider' isn't defined for the type '_CourseOverviewScreenState' - lib\src\features\catalog\presentation\course_overview_screen.dart:543:50 - undefined_method
+  error - The property 'isNotEmpty' can't be unconditionally accessed because the receiver can be 'null' - lib\src\features\catalog\presentation\course_overview_screen.dart:544:31 - unchecked_use_of_nullable_value
+  error - The method 'lessonPartsStreamProvider' isn't defined for the type '_CourseOverviewScreenState' - lib\src\features\catalog\presentation\course_overview_screen.dart:545:50 - undefined_method
+  error - The property 'first' can't be unconditionally accessed because the receiver can be 'null' - lib\src\features\catalog\presentation\course_overview_screen.dart:545:116 - unchecked_use_of_nullable_value
+  error - The property 'isNotEmpty' can't be unconditionally accessed because the receiver can be 'null' - lib\src\features\catalog\presentation\course_overview_screen.dart:546:31 - unchecked_use_of_nullable_value
+   info - Don't use 'BuildContext's across async gaps - lib\src\features\catalog\presentation\course_overview_screen.dart:547:23 - use_build_context_synchronously
+  error - The property 'first' can't be unconditionally accessed because the receiver can be 'null' - lib\src\features\catalog\presentation\course_overview_screen.dart:547:76 - unchecked_use_of_nullable_value
+warning - Dead code - lib\src\features\catalog\presentation\course_overview_screen.dart:564:48 - dead_code
+warning - The left operand can't be null, so the right operand is never executed - lib\src\features\catalog\presentation\course_overview_screen.dart:564:51 - dead_null_aware_expression
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\src\features\catalog\presentation\course_overview_screen.dart:583:44 - use_build_context_synchronously
+  error - All final variables must be initialized, but 'reviews' isn't - lib\src\features\courses\domain\models.dart:25:3 - final_not_initialized_constructor
+  error - The named parameter 'reviews' isn't defined - lib\src\features\courses\domain\models.dart:59:7 - undefined_named_parameter
+  error - The named parameter 'border' isn't defined - lib\src\features\courses\presentation\lesson_player_screen.dart:146:11 - undefined_named_parameter
+  error - The named parameter 'videoId' is required, but there's no corresponding argument - lib\src\features\courses\presentation\lesson_player_screen.dart:207:14 - missing_required_argument
+  error - The named parameter 'vimeoPlayerModel' isn't defined - lib\src\features\courses\presentation\lesson_player_screen.dart:208:9 - undefined_named_parameter
+  error - The method 'VimeoPlayerModel' isn't defined for the type '_LessonPlayerScreenState' - lib\src\features\courses\presentation\lesson_player_screen.dart:208:27 - undefined_method
+warning - Unused import: 'package:cloud_firestore/cloud_firestore.dart' - lib\src\features\courses\presentation\my_courses_screen.dart:9:8 - unused_import
+  error - Arguments of a constant creation must be constant expressions - lib\src\features\courses\presentation\my_courses_screen.dart:125:73 - const_with_non_constant_argument
+  error - The getter 'softGold' isn't defined for the type 'AppTheme' - lib\src\features\courses\presentation\my_courses_screen.dart:125:82 - undefined_getter
+warning - Unused import: 'package:mishkat_learning_app/src/features/courses/data/progress_repository.dart' - lib\src\features\home\presentation\dashboard_screen.dart:7:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\home\presentation\dashboard_screen.dart:331:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\home\presentation\dashboard_screen.dart:333:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\home\presentation\dashboard_screen.dart:357:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\features\home\presentation\dashboard_screen.dart:359:56 - deprecated_member_use
+   info - 'dart:js_util' is deprecated and shouldn't be used. Use dart:js_interop instead - lib\src\features\payments\data\payment_repository.dart:7:1 - deprecated_member_use
+   info - Don't use web-only libraries outside Flutter web plugins - lib\src\features\payments\data\payment_repository.dart:7:1 - avoid_web_libraries_in_flutter
+   info - Don't invoke 'print' in production code - lib\src\features\payments\data\payment_repository.dart:51:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\src\features\payments\data\payment_repository.dart:115:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\src\features\payments\data\payment_repository.dart:121:9 - avoid_print
+warning - The value of the field '_onExternalWallet' isn't used - lib\src\features\payments\data\payment_repository.dart:129:42 - unused_field
+   info - Library names are not necessary - lib\src\features\payments\data\razorpay_js.dart:2:9 - unnecessary_library_name
+   info - 'package:js/js.dart' is deprecated and shouldn't be used. Use dart:js_interop instead - lib\src\features\payments\data\razorpay_js.dart:4:1 - deprecated_member_use
+warning - Unused import: '../../courses/data/progress_repository.dart' - lib\src\features\profile\presentation\profile_screen.dart:8:8 - unused_import
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\src\features\profile\presentation\profile_screen.dart:163:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\src\features\profile\presentation\profile_screen.dart:169:30 - use_build_context_synchronously
+

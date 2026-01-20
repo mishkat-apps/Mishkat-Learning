@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/domain/models.dart';
-import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
+import '../../../theme/app_theme.dart';
+import '../data/course_repository.dart';
+import '../domain/models.dart';
+import '../../auth/data/auth_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MyCoursesScreen extends ConsumerWidget {

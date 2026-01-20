@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-
+import '../../../theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/data/progress_repository.dart';
-import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
-import 'package:mishkat_learning_app/src/features/courses/domain/models.dart';
-import 'package:mishkat_learning_app/src/features/payments/data/payment_repository.dart';
+import '../../courses/data/course_repository.dart';
+import '../../courses/data/progress_repository.dart';
+import '../../auth/data/auth_repository.dart';
+import '../../courses/domain/models.dart';
+import '../../payments/data/payment_repository.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class CourseOverviewScreen extends ConsumerStatefulWidget {
@@ -30,9 +29,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
     // Initialize Razorpay
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(paymentRepositoryProvider).init(
-        _handlePaymentSuccess,
-        _handlePaymentError,
-        _handleExternalWallet,
+        onSuccess: _handlePaymentSuccess,
+        onFailure: _handlePaymentError,
+        onExternalWallet: _handleExternalWallet,
       );
     });
   }
@@ -227,7 +226,21 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
                             controller: _tabController,
                             children: [
                               _buildAboutSection(course),
-                              _buildObjectivesSection(course),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionTitle('About this Course'),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    course.description,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: AppTheme.slateGrey.withValues(alpha: 0.8),
+                                      height: 1.6,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -287,7 +300,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
         ),
         const SizedBox(height: 16),
         Text(
-          course.about,
+          course.description,
           style: const TextStyle(height: 1.6, color: AppTheme.slateGrey, fontSize: 15),
         ),
       ],
@@ -312,8 +325,8 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      item,
-                      style: const TextStyle(fontSize: 15, height: 1.4),
+                      item, // Changed from course.description to item
+                      style: const TextStyle(fontSize: 15, height: 1.4), // Updated style
                     ),
                   ),
                 ],
@@ -324,7 +337,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
   }
 
   Widget _buildOutlineList(BuildContext context, Course course) {
-    return ref.watch(lessonsStreamProvider(course.id)).when(
+    return ref.watch(lessonsProvider(course.id)).when(
       data: (lessons) {
         if (lessons.isEmpty) return const Center(child: Text('No lessons available yet.'));
         return Column(
@@ -469,11 +482,15 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
   }
 
   Widget _buildLessonTile(BuildContext context, Lesson lesson, Course course) {
-    return ref.watch(lessonPartsStreamProvider((courseId: course.id, lessonId: lesson.id))).when(
+    final user = ref.watch(authStateProvider).value;
+    final isEnrolled = user != null
+        ? ref.watch(isEnrolledProvider((uid: user.uid, courseId: course.id))).value ?? false
+        : false;
+    return ref.watch(lessonPartsProvider((courseId: course.id, lessonId: lesson.id))).when(
       data: (parts) => ExpansionTile(
         title: Text(lesson.title, style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
         children: parts.map((part) {
-          final isQuiz = part.isQuiz;
+          final isQuiz = part.type == 'quiz';
           return ListTile(
             leading: Icon(
               isQuiz ? Icons.quiz_outlined : Icons.lock_outline,
@@ -491,9 +508,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
               isQuiz ? 'Graded' : part.duration,
               style: const TextStyle(fontSize: 12, color: AppTheme.slateGrey),
             ),
-            onTap: () {
-              context.push('/browse/${course.slug}/lessons/${part.slug}');
-            },
+            onTap: isEnrolled
+                ? () => context.push('/browse/${course.slug}/lessons/${lesson.slug}')
+                : null,
           );
         }).toList(),
       ),
@@ -540,11 +557,11 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> wit
 
                 if (isEnrolled) {
                   // Navigate to the first lesson part
-                  final lessons = await ref.read(lessonsStreamProvider(course.id).future);
-                  if (lessons.isNotEmpty) {
-                    final parts = await ref.read(lessonPartsStreamProvider((courseId: course.id, lessonId: lessons.first.id)).future);
-                    if (parts.isNotEmpty) {
-                      context.push('/browse/${course.slug}/lessons/${parts.first.slug}');
+                  final lessons = await ref.read(lessonsProvider(course.id).future);
+                  if (lessons != null && lessons.isNotEmpty) {
+                    final parts = await ref.read(lessonPartsProvider((courseId: course.id, lessonId: lessons.first.id)).future);
+                    if (parts != null && parts.isNotEmpty) {
+                      context.push('/browse/${course.slug}/lessons/${lessons.first.slug}');
                     }
                   }
                 } else if (course.isFree) {
