@@ -1,21 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../theme/app_theme.dart';
+import '../data/auth_repository.dart';
 import '../../../widgets/common/geometric_background.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  Future<void> _signUp() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authRepositoryProvider).createUserWithEmailAndPassword(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+      // Optional: Update display name if needed immediately
+      if (mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -42,21 +65,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const Icon(
                       Icons.lightbulb_outline,
                       size: 48,
-                      color: AppTheme.accentGold,
+                      color: AppTheme.radiantGold,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Join Mishkat',
-                      style: GoogleFonts.outfit(
+                      style: GoogleFonts.montserrat(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.secondaryNavy,
+                        color: AppTheme.deepEmerald,
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'Begin your search for divine wisdom',
-                      style: TextStyle(color: AppTheme.textGrey),
+                      style: TextStyle(color: AppTheme.slateGrey),
                     ),
                     const SizedBox(height: 40),
                     _buildTextField(
@@ -86,8 +109,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => context.go('/dashboard'),
-                        child: const Text('Create Account'),
+                        onPressed: _isLoading ? null : _signUp,
+                        child: _isLoading 
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Text('Create Account'),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -126,19 +151,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.primaryEmerald, size: 20),
+        prefixIcon: Icon(icon, color: AppTheme.deepEmerald, size: 20),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility_off : Icons.visibility,
                   size: 20,
-                  color: AppTheme.textGrey,
+                  color: AppTheme.slateGrey,
                 ),
                 onPressed: onToggleVisibility,
               )
             : null,
         filled: true,
-        fillColor: AppTheme.surfaceSand.withOpacity(0.3),
+        fillColor: AppTheme.sacredCream.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -149,9 +174,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryEmerald, width: 1),
+          borderSide: const BorderSide(color: AppTheme.deepEmerald, width: 1),
         ),
-        labelStyle: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+        labelStyle: const TextStyle(color: AppTheme.slateGrey, fontSize: 14),
       ),
     );
   }

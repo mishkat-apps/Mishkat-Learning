@@ -1,83 +1,226 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
+import 'package:mishkat_learning_app/src/features/auth/data/user_repository.dart';
+import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
+import 'package:mishkat_learning_app/src/features/courses/data/progress_repository.dart';
+import 'package:go_router/go_router.dart';
 import 'widgets/continue_learning_card.dart';
 import 'widgets/daily_wisdom_card.dart';
 import 'widgets/mishkat_course_card.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final coursesAsync = ref.watch(coursesStreamProvider);
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                GestureDetector(
+                  onTap: () => context.go('/profile'),
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.5), width: 2),
+                    ),
+                    child: authState.when(
+                      data: (user) {
+                        final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
+                        return profileAsync.when(
+                          data: (profile) => CircleAvatar(
+                            radius: 28,
+                            backgroundImage: (profile?.photoUrl != null && profile!.photoUrl!.isNotEmpty)
+                              ? NetworkImage(profile.photoUrl!) 
+                              : NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile?.displayName ?? 'User')}&background=004D40&color=fff'),
+                          ),
+                          loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
+                          error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
+                        );
+                      },
+                      loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
+                      error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                
+                // Greeting & App Name
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'MISHKAT LEARNING',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.radiantGold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      authState.when(
+                        data: (user) {
+                          final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
+                          return profileAsync.when(
+                            data: (profile) => Text(
+                              'Salam Alaykum, ${profile?.displayName.split(' ')[0] ?? 'Seeker'}',
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            loading: () => const Text('Salam Alaykum...'),
+                            error: (_, __) => const Text('Salam Alaykum'),
+                          );
+                        },
+                        loading: () => const Text('Salam Alaykum...'),
+                        error: (_, __) => const Text('Salam Alaykum'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Notification Icon with Badge
+                Stack(
+                  alignment: Alignment.topRight,
                   children: [
-                    const Text(
-                      'MISHKAT LEARNING',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textGrey,
-                        letterSpacing: 1.5,
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.notifications_outlined,
+                        color: AppTheme.deepEmerald,
+                        size: 24,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Assalamu Alaikum, Ahmad',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () {},
-                  color: AppTheme.secondaryNavy,
-                  iconSize: 28,
-                ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
+            Divider(color: Colors.black.withValues(alpha: 0.05), thickness: 1),
+            const SizedBox(height: 24),
 
             // Continue Learning Section Header
-            const Text(
-              'Continue Learning',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.secondaryNavy,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Continue Learning',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  'In Progress',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.deepEmerald,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 
             // Continue Learning Card
-            const ContinueLearningCard(
-              courseTitle: 'Philosophy of Karbala',
-              currentLesson: 'Lecture 4: Spiritual Dimensions',
-              progress: 0.65,
-              timeLeft: '32 mins left',
+            authState.when(
+              data: (user) {
+                if (user == null) {
+                  return _buildLoginPrompt(context);
+                }
+
+                final enrollmentsAsync = ref.watch(userEnrollmentsProvider(user.uid));
+                return enrollmentsAsync.when(
+                  data: (enrollments) {
+                    if (enrollments.isEmpty) {
+                      return _buildEmptyProgress(context);
+                    }
+
+                    // Get the latest enrollment
+                    final latest = enrollments.first;
+                    final courseId = latest['id'] as String;
+                    final completedParts = latest['completedParts'] as List? ?? [];
+
+                    return ref.watch(specificCourseProvider(courseId)).when(
+                          data: (course) {
+                            if (course == null) return const SizedBox.shrink();
+                            
+                            // Calculate progress
+                            final progress = course.lessonCount > 0 
+                                ? (completedParts.length / course.lessonCount) // This is a bit naive if lessonCount is lesson parts
+                                : 0.0;
+                            // For now, let's just assume we have parts. But we need total parts.
+                            // Better: Fetch total parts for the course.
+                            
+                            return ContinueLearningCard(
+                              courseTitle: course.title,
+                              currentLesson: 'Next Part', // Placeholder for now
+                              progress: progress,
+                              imageUrl: course.imageUrl,
+                              onPressed: () => context.push('/browse/${course.slug}'),
+                            );
+                          },
+                          loading: () => const Center(child: CircularProgressIndicator()),
+                          error: (e, s) => const SizedBox.shrink(),
+                        );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, s) => const SizedBox.shrink(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => const SizedBox.shrink(),
             ),
             const SizedBox(height: 32),
 
             // Daily Wisdom Section Header
-            const Text(
+            Text(
               'Daily Wisdom',
-              style: TextStyle(
-                fontSize: 16,
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.secondaryNavy,
+                color: Colors.black,
               ),
             ),
             const SizedBox(height: 16),
@@ -90,91 +233,70 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Featured Courses
-            _buildSectionHeader('Featured Courses', 'Explore All'),
+            _buildSectionHeader('Explore More Categories', 'Browse All'),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 280,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: const [
-                  MishkatCourseCard(
-                    title: 'Foundations of Shia Jurisprudence',
-                    instructor: 'Sheikh Al-Amili',
-                    rating: 4.9,
-                    reviews: 245,
-                    duration: '8h',
-                    imageUrl: 'https://images.unsplash.com/photo-1604514570127-1b3ae0558b5f?w=400&h=300&fit=crop',
-                    category: 'Jurisprudence',
-                  ),
-                  MishkatCourseCard(
-                    title: 'Lives of the Ahlul Bayt',
-                    instructor: 'Dr. Fatima Zahra',
-                    rating: 5.0,
-                    reviews: 189,
-                    duration: '12h',
-                    imageUrl: 'https://images.unsplash.com/photo-1519013196-4c6fbe1de8b6?w=400&h=300&fit=crop',
-                    category: 'History',
-                  ),
-                  MishkatCourseCard(
-                    title: 'Tawheed: Divine Unity',
-                    instructor: 'Seyyed Hossein Nasr',
-                    rating: 4.8,
-                    reviews: 312,
-                    duration: '6h',
-                    imageUrl: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=300&fit=crop',
-                    category: 'Theology',
-                  ),
-                ],
+            coursesAsync.when(
+              data: (courses) => SizedBox(
+                height: 280,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: courses.length > 5 ? 5 : courses.length,
+                  itemBuilder: (context, index) {
+                    final course = courses[index];
+                    return MishkatCourseCard(
+                      title: course.title,
+                      instructor: course.instructor,
+                      rating: course.rating,
+                      reviews: course.reviews,
+                      duration: course.duration,
+                      imageUrl: course.imageUrl,
+                      category: course.category,
+                      slug: course.slug,
+                    );
+                  },
+                ),
               ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, __) => Text('Error loading courses: $err'),
             ),
             const SizedBox(height: 40),
 
             // New Additions
             _buildSectionHeader('New Additions', 'See all'),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 280,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: const [
-                  MishkatCourseCard(
-                    title: 'The Spiritual Secrets of Prayer',
-                    instructor: 'Sheikh Hassan Qazwini',
-                    rating: 4.9,
-                    reviews: 156,
-                    duration: '5h',
-                    imageUrl: 'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=300&fit=crop',
-                    level: 'Beginner',
-                    lessonCount: '12 Lessons',
-                  ),
-                  MishkatCourseCard(
-                    title: 'Advanced Logic (Mantiq)',
-                    instructor: 'Dr. Ahmad Vaezi',
-                    rating: 4.7,
-                    reviews: 89,
-                    duration: '15h',
-                    imageUrl: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop',
-                    level: 'Advanced',
-                  ),
-                  MishkatCourseCard(
-                    title: 'Ethics in Daily Life',
-                    instructor: 'Ustadha Fatima Abbas',
-                    rating: 4.8,
-                    reviews: 203,
-                    duration: '4h',
-                    imageUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&h=300&fit=crop',
-                    level: 'Intermediate',
-                    lessonCount: '8 Lessons',
-                  ),
-                ],
+            coursesAsync.when(
+              data: (courses) => SizedBox(
+                height: 280,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: courses.length > 3 ? 3 : courses.length,
+                  reverse: true, // Just to show something different
+                  itemBuilder: (context, index) {
+                    final course = courses[index];
+                    return MishkatCourseCard(
+                      title: course.title,
+                      instructor: course.instructor,
+                      rating: course.rating,
+                      reviews: course.reviews,
+                      duration: course.duration,
+                      imageUrl: course.imageUrl,
+                      level: course.level,
+                      lessonCount: '${course.lessonCount} Lessons',
+                      slug: course.slug,
+                    );
+                  },
+                ),
               ),
+              loading: () => const SizedBox.shrink(),
+              error: (err, __) => const SizedBox.shrink(),
             ),
             const SizedBox(height: 40),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(String title, String actionText) {
     return Row(
@@ -182,23 +304,81 @@ class DashboardScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: GoogleFonts.montserrat(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppTheme.secondaryNavy,
+            color: AppTheme.deepEmerald,
           ),
         ),
         TextButton(
           onPressed: () {},
           child: Text(
             actionText,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoginPrompt(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.deepEmerald.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.deepEmerald.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.lock_outline, color: AppTheme.deepEmerald, size: 40),
+          const SizedBox(height: 16),
+          Text(
+            'Sign in to track your progress',
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.push('/login'),
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyProgress(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppTheme.radiantGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.radiantGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.explore_outlined, color: AppTheme.radiantGold, size: 40),
+          const SizedBox(height: 16),
+          Text(
+            'Start your learning journey',
+            style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "You haven't enrolled in any courses yet.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppTheme.slateGrey, fontSize: 13),
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton(
+            onPressed: () => context.push('/browse'),
+            child: const Text('Browse Courses'),
+          ),
+        ],
+      ),
     );
   }
 }

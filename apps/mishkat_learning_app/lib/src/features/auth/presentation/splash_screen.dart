@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../theme/app_theme.dart';
+import '../data/auth_repository.dart';
 import '../../../widgets/common/geometric_background.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    // Wait for auth to settle or show logo for 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final user = ref.read(authRepositoryProvider).currentUser;
+    if (user != null) {
+      context.go('/dashboard');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,23 +45,23 @@ class SplashScreen extends StatelessWidget {
               const Icon(
                 Icons.lightbulb_outline,
                 size: 80,
-                color: AppTheme.accentGold,
+                color: AppTheme.radiantGold,
               ),
               const SizedBox(height: 16),
               Text(
                 'MISHKAT LEARNING',
-                style: GoogleFonts.outfit(
+                  style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 4,
-                  color: AppTheme.accentGold,
+                  color: AppTheme.radiantGold,
                 ),
               ),
               const Spacer(flex: 2),
               Text(
                 'Welcome to\nMishkat Learning',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.montserrat(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -50,7 +74,7 @@ class SplashScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   height: 1.5,
                 ),
               ),
@@ -82,11 +106,11 @@ class SplashScreen extends StatelessWidget {
               const SizedBox(height: 40),
               Text(
                 'QUEST FOR WISDOM',
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 2,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(height: 40),

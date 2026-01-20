@@ -21,7 +21,7 @@ class GeometricBackground extends StatelessWidget {
         Positioned.fill(
           child: CustomPaint(
             painter: _GeometricPainter(
-              color: Colors.white.withOpacity(opacity),
+              color: Colors.white.withValues(alpha: opacity),
             ),
           ),
         ),

@@ -87,7 +87,7 @@ class BrandStyleGuideScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppTheme.sacredCream,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.radiantGold.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.3)),
               ),
               child: Text(
                 '“The most complete gift of God is a life based on knowledge.” (Amiri 20)',
@@ -127,7 +127,7 @@ class BrandStyleGuideScreen extends StatelessWidget {
         border: hasBorder ? Border.all(color: Colors.grey.shade300) : null,
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -138,8 +138,8 @@ class BrandStyleGuideScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(name, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-          Text(hex, style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 11)),
+          Text(name, style: GoogleFonts.inter(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(hex, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 11)),
         ],
       ),
     );
@@ -167,7 +167,7 @@ class BrandStyleGuideScreen extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.deepEmerald.withOpacity(0.08),
+                color: AppTheme.deepEmerald.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -210,7 +210,7 @@ class BrandStyleGuideScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.deepEmerald.withOpacity(0.08),
+                color: AppTheme.deepEmerald.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),

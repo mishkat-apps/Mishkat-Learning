@@ -7,10 +7,20 @@ import '../../features/home/presentation/dashboard_screen.dart';
 import '../../features/catalog/presentation/catalog_screen.dart';
 import '../../features/catalog/presentation/course_overview_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/payments/presentation/payment_history_screen.dart';
+import '../../features/courses/presentation/lesson_player_screen.dart';
+import '../../features/courses/presentation/my_courses_screen.dart';
 import '../../widgets/navigation/main_shell.dart';
+import '../../features/style_guide/presentation/brand_style_guide_screen.dart';
+
 
 final goRouter = GoRouter(
   initialLocation: '/',
+  redirect: (context, state) {
+    // Note: In a real app, you'd use a more robust way to sync Riverpod with GoRouter
+    // For now, we'll keep it simple and handle it in the screens or via a provider
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/',
@@ -32,20 +42,48 @@ final goRouter = GoRouter(
           builder: (context, state) => const DashboardScreen(),
         ),
         GoRoute(
-          path: '/course/:id',
-          builder: (context, state) => const CourseOverviewScreen(),
-        ),
-        GoRoute(
-          path: '/courses',
+          path: '/browse',
           builder: (context, state) => const CatalogScreen(),
+          routes: [
+            GoRoute(
+              path: ':courseSlug',
+              builder: (context, state) {
+                final slug = state.pathParameters['courseSlug']!;
+                return CourseOverviewScreen(slug: slug);
+              },
+              routes: [
+                GoRoute(
+                  path: 'lessons/:lessonSlug',
+                  builder: (context, state) {
+                    final courseSlug = state.pathParameters['courseSlug']!;
+                    final lessonSlug = state.pathParameters['lessonSlug']!;
+                    return LessonPlayerScreen(
+                      courseSlug: courseSlug,
+                      lessonSlug: lessonSlug,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
-          path: '/library',
-          builder: (context, state) => const Center(child: Text('Library')),
+          path: '/my-courses',
+          builder: (context, state) => const MyCoursesScreen(),
         ),
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfileScreen(),
+          routes: [
+            GoRoute(
+              path: 'payments',
+              builder: (context, state) => const PaymentHistoryScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/style-guide',
+          builder: (context, state) => const BrandStyleGuideScreen(),
         ),
       ],
     ),

@@ -27,17 +27,17 @@ class DailyWisdomCard extends StatelessWidget {
                   width: 3,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: AppTheme.accentGold,
+                    color: AppTheme.radiantGold,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Text(
                   source.toUpperCase(),
-                  style: const TextStyle(
+                  style: GoogleFonts.montserrat(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textGrey,
+                    color: AppTheme.slateGrey,
                     letterSpacing: 1,
                   ),
                 ),
@@ -45,7 +45,7 @@ class DailyWisdomCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.share_outlined, size: 20),
                   onPressed: () {},
-                  color: AppTheme.textGrey,
+                  color: AppTheme.slateGrey,
                 ),
               ],
             ),
@@ -54,10 +54,10 @@ class DailyWisdomCard extends StatelessWidget {
             // Quote
             Text(
               quote,
-              style: GoogleFonts.lora(
+              style: GoogleFonts.amiri(
                 fontSize: 18,
                 fontStyle: FontStyle.italic,
-                color: AppTheme.secondaryNavy,
+                color: AppTheme.deepEmerald,
                 height: 1.6,
               ),
             ),

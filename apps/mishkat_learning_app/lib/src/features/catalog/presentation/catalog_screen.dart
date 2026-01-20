@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
+import 'package:mishkat_learning_app/src/core/constants/app_constants.dart';
 
-class CatalogScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mishkat_learning_app/src/features/courses/data/course_repository.dart';
+
+class CatalogScreen extends ConsumerStatefulWidget {
   const CatalogScreen({super.key});
 
   @override
-  State<CatalogScreen> createState() => _CatalogScreenState();
+  ConsumerState<CatalogScreen> createState() => _CatalogScreenState();
 }
 
-class _CatalogScreenState extends State<CatalogScreen> {
+class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   String _selectedCategory = 'All';
   String _searchQuery = '';
 
-  final List<String> _categories = [
-    'All',
-    'Theology',
-    'Jurisprudence',
-    'History',
-    'Spirituality',
-    'Ethics',
-    'Quranic Studies',
-  ];
+  final List<String> _categories = AppConstants.subjectAreas;
 
   final List<Map<String, dynamic>> _allCourses = [
     {
@@ -98,17 +95,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     },
   ];
 
-  List<Map<String, dynamic>> get _filteredCourses {
-    return _allCourses.where((course) {
-      final matchesCategory =
-          _selectedCategory == 'All' || course['category'] == _selectedCategory;
-      final matchesSearch = course['title']
-          .toString()
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).toList();
-  }
+  // We will now use the stream provided by Riverpod
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +103,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final crossAxisCount = width > 1200 ? 4 : (width > 800 ? 3 : (width > 600 ? 2 : 1));
 
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
@@ -127,13 +115,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.secondaryNavy,
+                color: AppTheme.slateGrey,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               '${_allCourses.length} courses available',
-              style: const TextStyle(color: AppTheme.textGrey),
+              style: const TextStyle(color: AppTheme.slateGrey),
             ),
             const SizedBox(height: 32),
 
@@ -142,7 +130,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
               onChanged: (value) => setState(() => _searchQuery = value),
               decoration: InputDecoration(
                 hintText: 'Search for courses...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryEmerald),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.deepEmerald),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -151,11 +139,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppTheme.textGrey.withOpacity(0.2)),
+                  borderSide: BorderSide(color: AppTheme.slateGrey.withValues(alpha: 0.2)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: AppTheme.primaryEmerald, width: 2),
+                  borderSide: const BorderSide(color: AppTheme.deepEmerald, width: 2),
                 ),
               ),
             ),
@@ -177,15 +165,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         setState(() => _selectedCategory = category);
                       },
                       backgroundColor: Colors.white,
-                      selectedColor: AppTheme.primaryEmerald,
+                      selectedColor: AppTheme.deepEmerald,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.secondaryNavy,
+                        color: isSelected ? Colors.white : AppTheme.slateGrey,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                       side: BorderSide(
                         color: isSelected
-                            ? AppTheme.primaryEmerald
-                            : AppTheme.textGrey.withOpacity(0.3),
+                            ? AppTheme.deepEmerald
+                            : AppTheme.slateGrey.withValues(alpha: 0.3),
                       ),
                     ),
                   );
@@ -193,46 +181,68 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Results Count
-            Text(
-              '${_filteredCourses.length} ${_filteredCourses.length == 1 ? 'course' : 'courses'} found',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.secondaryNavy,
-              ),
-            ),
-            const SizedBox(height: 16),
-
             // Course Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: _filteredCourses.length,
-              itemBuilder: (context, index) {
-                final course = _filteredCourses[index];
-                return _GridCourseCard(
-                  title: course['title'],
-                  instructor: course['instructor'],
-                  rating: course['rating'].toDouble(),
-                  reviews: course['reviews'],
-                  duration: course['duration'],
-                  imageUrl: course['imageUrl'],
-                );
-              },
-            ),
+            ref.watch(coursesStreamProvider).when(
+                  data: (courses) {
+                    final filtered = courses.where((course) {
+                      final matchesCategory = _selectedCategory == 'All' || course.category == _selectedCategory;
+                      final matchesSearch = course.title.toLowerCase().contains(_searchQuery.toLowerCase());
+                      return matchesCategory && matchesSearch;
+                    }).toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${filtered.length} ${filtered.length == 1 ? 'course' : 'courses'} found',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.slateGrey,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (filtered.isEmpty)
+                          Center(child: Padding(
+                            padding: const EdgeInsets.all(40.0),
+                            child: Text('No courses found matching your criteria.', style: TextStyle(color: AppTheme.slateGrey)),
+                          ))
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              childAspectRatio: 0.75,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                            ),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final course = filtered[index];
+                              return _GridCourseCard(
+                                title: course.title,
+                                instructor: course.instructor,
+                                rating: course.rating,
+                                reviews: course.reviews,
+                                duration: course.duration,
+                                imageUrl: course.imageUrl,
+                                slug: course.slug,
+                              );
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // Grid-optimized course card without fixed width
@@ -243,6 +253,7 @@ class _GridCourseCard extends StatelessWidget {
   final int reviews;
   final String duration;
   final String imageUrl;
+  final String slug;
 
   const _GridCourseCard({
     required this.title,
@@ -251,6 +262,7 @@ class _GridCourseCard extends StatelessWidget {
     required this.reviews,
     required this.duration,
     required this.imageUrl,
+    required this.slug,
   });
 
   @override
@@ -258,7 +270,7 @@ class _GridCourseCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => context.go('/course/1'),
+        onTap: () => context.push('/browse/$slug'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -277,7 +289,7 @@ class _GridCourseCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -301,10 +313,10 @@ class _GridCourseCard extends StatelessWidget {
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                       style: GoogleFonts.montserrat(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: AppTheme.secondaryNavy,
+                        color: AppTheme.slateGrey,
                       ),
                     ),
                     const Spacer(),
@@ -312,12 +324,12 @@ class _GridCourseCard extends StatelessWidget {
                       instructor,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textGrey),
+                      style: const TextStyle(fontSize: 11, color: AppTheme.slateGrey),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: AppTheme.accentGold, size: 14),
+                        const Icon(Icons.star, color: AppTheme.radiantGold, size: 14),
                         const SizedBox(width: 4),
                         Text(
                           rating.toString(),
@@ -326,7 +338,7 @@ class _GridCourseCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '($reviews)',
-                          style: const TextStyle(fontSize: 11, color: AppTheme.textGrey),
+                          style: const TextStyle(fontSize: 11, color: AppTheme.slateGrey),
                         ),
                       ],
                     ),

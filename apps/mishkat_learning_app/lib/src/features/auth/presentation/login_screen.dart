@@ -1,20 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../theme/app_theme.dart';
+import '../data/auth_repository.dart';
 import '../../../widgets/common/geometric_background.dart';
-import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  Future<void> _signIn() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authRepositoryProvider).signInWithEmailAndPassword(
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
+      if (mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = await ref.read(authRepositoryProvider).signInWithGoogle();
+      if (user != null && mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google Sign-In failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = await ref.read(authRepositoryProvider).signInWithApple();
+      if (user != null && mounted) context.go('/dashboard');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Apple Sign-In failed: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -40,21 +94,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Icon(
                       Icons.lightbulb_outline,
                       size: 48,
-                      color: AppTheme.accentGold,
+                      color: AppTheme.radiantGold,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Welcome Back',
-                      style: GoogleFonts.outfit(
+                      style: GoogleFonts.montserrat(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.secondaryNavy,
+                        color: AppTheme.deepEmerald,
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'Continue your journey for knowledge',
-                      style: TextStyle(color: AppTheme.textGrey),
+                      style: TextStyle(color: AppTheme.slateGrey),
                     ),
                     const SizedBox(height: 40),
                     _buildTextField(
@@ -85,9 +139,38 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => context.go('/dashboard'),
-                        child: const Text('Sign In'),
+                        onPressed: _isLoading ? null : _signIn,
+                        child: _isLoading 
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Text('Sign In'),
                       ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text('OR', style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.slateGrey)),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _SocialButton(
+                          icon: 'assets/icons/google.png',
+                          onPressed: _isLoading ? null : _signInWithGoogle,
+                          label: 'Google',
+                        ),
+                        _SocialButton(
+                          icon: 'assets/icons/apple.png',
+                          onPressed: _isLoading ? null : _signInWithApple,
+                          label: 'Apple',
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     Row(
@@ -125,19 +208,19 @@ class _LoginScreenState extends State<LoginScreen> {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.primaryEmerald, size: 20),
+        prefixIcon: Icon(icon, color: AppTheme.deepEmerald, size: 20),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
                   isPasswordVisible ? Icons.visibility_off : Icons.visibility,
                   size: 20,
-                  color: AppTheme.textGrey,
+                  color: AppTheme.slateGrey,
                 ),
                 onPressed: onToggleVisibility,
               )
             : null,
         filled: true,
-        fillColor: AppTheme.surfaceSand.withOpacity(0.3),
+        fillColor: AppTheme.sacredCream.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -148,9 +231,36 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryEmerald, width: 1),
+          borderSide: const BorderSide(color: AppTheme.deepEmerald, width: 1),
         ),
-        labelStyle: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+        labelStyle: const TextStyle(color: AppTheme.slateGrey, fontSize: 14),
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final String icon;
+  final VoidCallback? onPressed;
+  final String label;
+
+  const _SocialButton({
+    required this.icon,
+    required this.onPressed,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.login, size: 18), // Placeholder until icons are ready
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppTheme.secondaryNavy,
+        side: const BorderSide(color: AppTheme.sacredCream),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

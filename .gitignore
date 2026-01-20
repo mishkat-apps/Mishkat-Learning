@@ -1,9 +1,12 @@
-# Flutter
+# Flutter / Dart
 .dart_tool/
 .packages
 .pub-cache/
 .pub/
 build/
+**/build/
+.flutter-plugins
+.flutter-plugins-dependencies
 *.iconset
 *.pks
 
@@ -24,6 +27,9 @@ firebase-debug.log
 # IDE
 .idea/
 .vscode/
+*.iml
+*.ipr
+*.iws
 *.swp
 *.swo
 *.DS_Store
@@ -32,3 +38,9 @@ firebase-debug.log
 .env
 *.secret.json
 service-account-key.json
+google-services.json
+GoogleService-Info.plist
+
+# Misc
+*.log
+.history

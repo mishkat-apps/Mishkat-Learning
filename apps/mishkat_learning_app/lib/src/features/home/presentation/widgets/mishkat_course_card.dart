@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
@@ -12,6 +13,8 @@ class MishkatCourseCard extends StatelessWidget {
   final String? category;
   final String? level;
   final String? lessonCount;
+  final String slug;
+  final double? width;
 
   const MishkatCourseCard({
     super.key,
@@ -24,17 +27,19 @@ class MishkatCourseCard extends StatelessWidget {
     this.category,
     this.level,
     this.lessonCount,
+    required this.slug,
+    this.width,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200,
+      width: width ?? 200,
       margin: const EdgeInsets.only(right: 16),
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.go('/course/1'),
+          onTap: () => context.push('/browse/$slug'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -55,8 +60,8 @@ class MishkatCourseCard extends StatelessWidget {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                AppTheme.primaryEmerald.withOpacity(0.3),
-                                AppTheme.accentGold.withOpacity(0.2),
+                                AppTheme.deepEmerald.withValues(alpha: 0.3),
+                                AppTheme.radiantGold.withValues(alpha: 0.2),
                               ],
                             ),
                           ),
@@ -64,7 +69,7 @@ class MishkatCourseCard extends StatelessWidget {
                             child: Icon(
                               Icons.image_not_supported_outlined,
                               size: 40,
-                              color: AppTheme.textGrey,
+                              color: AppTheme.slateGrey,
                             ),
                           ),
                         );
@@ -86,10 +91,10 @@ class MishkatCourseCard extends StatelessWidget {
                           ),
                           child: Text(
                             category!.toUpperCase(),
-                            style: const TextStyle(
+                            style: GoogleFonts.montserrat(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.secondaryNavy,
+                              color: AppTheme.deepEmerald,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -101,7 +106,7 @@ class MishkatCourseCard extends StatelessWidget {
               
               // Content Section
               Padding(
-                padding: const EdgeInsets.all(14.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -110,14 +115,14 @@ class MishkatCourseCard extends StatelessWidget {
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: GoogleFonts.montserrat(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: AppTheme.secondaryNavy,
-                        height: 1.3,
+                        color: AppTheme.slateGrey,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     
                     // Instructor with icon
                     Row(
@@ -125,7 +130,7 @@ class MishkatCourseCard extends StatelessWidget {
                         const Icon(
                           Icons.person_outline,
                           size: 14,
-                          color: AppTheme.textGrey,
+                                color: AppTheme.slateGrey,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -133,15 +138,15 @@ class MishkatCourseCard extends StatelessWidget {
                             instructor,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: AppTheme.textGrey,
+                                    color: AppTheme.slateGrey,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     
                     // Bottom Row - Level/Lesson Count
                     if (level != null || lessonCount != null)
@@ -151,14 +156,14 @@ class MishkatCourseCard extends StatelessWidget {
                             const Icon(
                               Icons.play_circle_outline,
                               size: 14,
-                              color: AppTheme.textGrey,
+                                    color: AppTheme.slateGrey,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               lessonCount!,
-                              style: const TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize: 11,
-                                color: AppTheme.textGrey,
+                                      color: AppTheme.slateGrey,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -172,12 +177,12 @@ class MishkatCourseCard extends StatelessWidget {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: _getLevelColor(level!).withOpacity(0.1),
+                                color: _getLevelColor(level!).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 level!.toUpperCase(),
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                   color: _getLevelColor(level!),
@@ -193,13 +198,13 @@ class MishkatCourseCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.star,
-                            color: AppTheme.accentGold,
+                            color: AppTheme.radiantGold,
                             size: 14,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             rating.toString(),
-                            style: const TextStyle(
+                            style: GoogleFonts.montserrat(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -207,9 +212,9 @@ class MishkatCourseCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '($reviews)',
-                            style: const TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: AppTheme.textGrey,
+                              color: AppTheme.slateGrey,
                             ),
                           ),
                         ],
@@ -233,7 +238,7 @@ class MishkatCourseCard extends StatelessWidget {
       case 'advanced':
         return Colors.red;
       default:
-        return AppTheme.primaryEmerald;
+        return AppTheme.deepEmerald;
     }
   }
 }

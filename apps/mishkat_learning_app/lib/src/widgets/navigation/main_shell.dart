@@ -18,26 +18,7 @@ class MainShell extends StatelessWidget {
           if (isDesktop) const _Sidebar(),
           Expanded(
             child: Scaffold(
-              appBar: !isDesktop
-                  ? AppBar(
-                      title: const Text('Mishkat Learning'),
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.secondaryNavy,
-                      actions: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.notifications_none),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: CircleAvatar(
-                            radius: 16,
-                            backgroundImage: NetworkImage('https://placeholder.com/150'),
-                          ),
-                        ),
-                      ],
-                    )
-                  : null,
+              appBar: null,
               body: child,
               bottomNavigationBar: !isDesktop ? const _BottomNav() : null,
               drawer: isTablet ? const Drawer(child: _Sidebar()) : null,
@@ -56,7 +37,7 @@ class _Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 280,
-      color: AppTheme.secondaryNavy,
+      color: AppTheme.slateGrey,
       child: Column(
         children: [
           DrawerHeader(
@@ -64,12 +45,12 @@ class _Sidebar extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lightbulb, color: AppTheme.accentGold, size: 32),
+                  const Icon(Icons.lightbulb, color: AppTheme.radiantGold, size: 32),
                   const SizedBox(height: 8),
                   const Text(
                     'MISHKAT LEARNING',
                     style: TextStyle(
-                      color: AppTheme.accentGold,
+                      color: AppTheme.radiantGold,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
                     ),
@@ -79,8 +60,9 @@ class _Sidebar extends StatelessWidget {
             ),
           ),
           const _NavTile(label: 'Home', icon: Icons.home_outlined, path: '/dashboard'),
-          const _NavTile(label: 'Browse', icon: Icons.book_outlined, path: '/courses'),
-          const _NavTile(label: 'My Courses', icon: Icons.bookmark_outline, path: '/library'),
+          const _NavTile(label: 'Browse', icon: Icons.book_outlined, path: '/browse'),
+          const _NavTile(label: 'My Courses', icon: Icons.bookmark_outline, path: '/my-courses'),
+          const _NavTile(label: 'Style Guide', icon: Icons.palette_outlined, path: '/style-guide'),
           const Spacer(),
           const _NavTile(label: 'Profile', icon: Icons.person_outline, path: '/profile'),
           const SizedBox(height: 20),
@@ -113,8 +95,8 @@ class _BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppTheme.primaryEmerald,
-      unselectedItemColor: AppTheme.textGrey,
+      selectedItemColor: AppTheme.deepEmerald,
+      unselectedItemColor: AppTheme.slateGrey,
       showSelectedLabels: true,
       showUnselectedLabels: true,
       selectedFontSize: 12,
@@ -126,7 +108,7 @@ class _BottomNav extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
       ],
       onTap: (index) {
-        final paths = ['/dashboard', '/courses', '/library', '/profile'];
+        final paths = ['/dashboard', '/browse', '/my-courses', '/profile'];
         context.go(paths[index]);
       },
     );
