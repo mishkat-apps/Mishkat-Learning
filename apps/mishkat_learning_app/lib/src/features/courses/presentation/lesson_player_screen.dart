@@ -7,6 +7,7 @@ import '../../../theme/app_theme.dart';
 import '../data/course_repository.dart';
 import '../data/progress_repository.dart';
 import '../domain/models.dart';
+import '../../ai/data/ai_repository.dart'; // Added this import
 import '../../auth/data/auth_repository.dart';
 import 'package:flutter/services.dart';
 
@@ -29,7 +30,9 @@ class LessonPlayerScreen extends ConsumerStatefulWidget {
 class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? _activeLessonId;
+  String? _expandedLessonId;
   LessonPart? _activePart;
+  bool _isTranscribing = false;
 
   @override
   void initState() {
@@ -67,8 +70,8 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth > 1100;
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 1100;
     
     final courseAsync = ref.watch(courseBySlugProvider(widget.courseSlug));
 
@@ -88,19 +91,21 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
             }
             activeLesson ??= lessons.first;
             _activeLessonId = activeLesson.id;
+            _expandedLessonId ??= activeLesson.id;
 
             return Scaffold(
               backgroundColor: Colors.white,
               appBar: AppBar(
                 title: Text(
                   course.title,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.montserrat(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: AppTheme.slateGrey,
+                    color: AppTheme.secondaryNavy,
                   ),
                 ),
                 backgroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
                 elevation: 0,
                 centerTitle: true,
                 actions: [
@@ -135,106 +140,187 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   }
 
   Widget _buildWideLayout(Course course, List<Lesson> lessons, Lesson activeLesson) {
-    // Similar to mobile but with side playlist
     return Row(
       children: [
+        // Left Column: Video + Details + Tabs (Transcript/Resources)
         Expanded(
-          flex: 7,
-          child: _buildScrollableContent(course, lessons, activeLesson),
-        ),
-        Container(
-          width: 380,
-          decoration: const BoxDecoration(
-            border: Border(left: BorderSide(color: Color(0xFFF0F0F0))),
+          flex: 65,
+          child: Column(
+            children: [
+              _buildVideoPlayer(course.id, activeLesson),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLessonHeader(course, lessons, activeLesson),
+                      const SizedBox(height: 24),
+                      _buildTabsSection(course, activeLesson, excludeLessons: true),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: _buildPlaylist(course.id, lessons, activeLesson.id),
+        ),
+        // Right Column: Sticky Playlist
+        Expanded(
+          flex: 35,
+          child: Container(
+            decoration: const BoxDecoration(
+              border: Border(left: BorderSide(color: Color(0xFFE5E7EB))),
+              color: Colors.white,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.list_alt_rounded, color: AppTheme.deepEmerald),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Course Content',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.secondaryNavy,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _buildPlaylist(course.id, lessons, activeLesson.id, course.totalParts),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildMobileLayout(Course course, List<Lesson> lessons, Lesson activeLesson) {
-    return _buildScrollableContent(course, lessons, activeLesson);
-  }
-
-  Widget _buildScrollableContent(Course course, List<Lesson> lessons, Lesson activePart) {
-    final partsAsync = ref.watch(lessonPartsProvider((courseId: course.id, lessonId: activePart.id)));
-    final user = ref.watch(authRepositoryProvider).currentUser;
-    final progressAsync = user != null 
-        ? ref.watch(userCourseProgressProvider((uid: user.uid, courseId: course.id)))
-        : const AsyncValue<Map<String, dynamic>>.data(<String, dynamic>{});
-
     return Column(
       children: [
-        _buildVideoPlayer(course.id, activePart),
+        _buildVideoPlayer(course.id, activeLesson),
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                partsAsync.when(
-                  data: (lessonParts) {
-                    final currentLesson = _getCurrentLesson(lessonParts);
-                    final partIndex = lessons.indexOf(activePart) + 1;
-                    
-                    return Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (currentLesson != null) ...[
-                            Text(
-                              'Lesson ${lessonParts.indexOf(currentLesson) + 1}: ${currentLesson.title}',
-                              style: GoogleFonts.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.slateGrey,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                          ],
-                          Text(
-                            'Part $partIndex: ${activePart.title}',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: AppTheme.slateGrey.withOpacity(0.5),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildModuleProgress(lessonParts, progressAsync.value ?? <String, dynamic>{}),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox(height: 100),
-                  error: (e, _) => Text('Error: $e'),
-                ),
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppTheme.deepEmerald,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: AppTheme.deepEmerald,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 14),
-                  tabs: const [
-                    Tab(text: 'Lessons'),
-                    Tab(text: 'Transcript'),
-                    Tab(text: 'Resources'),
-                  ],
-                ),
-                SizedBox(
-                  height: 600, // Fixed height or adjust based on content
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildPlaylist(course.id, lessons, activePart.id),
-                      _buildTranscript(course.id, activePart),
-                      const Center(child: Text('Resources coming soon...')),
-                    ],
-                  ),
-                ),
+                _buildLessonHeader(course, lessons, activeLesson),
+                const SizedBox(height: 24),
+                _buildTabsSection(course, activeLesson, excludeLessons: false),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLessonHeader(Course course, List<Lesson> lessons, Lesson activeLesson) {
+    final partsAsync = ref.watch(lessonPartsProvider((courseId: course.id, lessonId: activeLesson.id)));
+    final user = ref.watch(authRepositoryProvider).currentUser;
+    final progressAsync = user != null 
+        ? ref.watch(userCourseProgressProvider((uid: user.uid, courseId: course.id)))
+        : const AsyncValue<Map<String, dynamic>>.data(<String, dynamic>{});
+
+    return partsAsync.when(
+      data: (lessonParts) {
+        final currentLesson = _getCurrentLesson(lessonParts);
+        final partIndex = lessons.indexOf(activeLesson) + 1;
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (currentLesson != null) ...[
+                Text(
+                  'Lesson ${lessonParts.indexOf(currentLesson) + 1}: ${currentLesson.title}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.secondaryNavy,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              Text(
+                'Part $partIndex: ${activeLesson.title}',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.slateGrey.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildModuleProgress(lessonParts, progressAsync.value ?? <String, dynamic>{}),
+            ],
+          ),
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.all(24.0),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Text('Error: $e'),
+      ),
+    );
+  }
+
+  Widget _buildTabsSection(Course course, Lesson activeLesson, {required bool excludeLessons}) {
+    final List<Widget> tabs = [];
+    final List<Widget> tabViews = [];
+
+    if (!excludeLessons) {
+      tabs.add(const Tab(text: 'Lessons'));
+      tabViews.add(
+        ref.watch(lessonsProvider(course.id)).when(
+          data: (lessons) => _buildPlaylist(course.id, lessons, activeLesson.id, course.totalParts),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+        ),
+      );
+    }
+
+    tabs.add(const Tab(text: 'Transcript'));
+    tabViews.add(_buildTranscript(course.id, activeLesson));
+
+    tabs.add(const Tab(text: 'Resources'));
+    tabViews.add(const Center(child: Text('Resources coming soon...')));
+
+    // We need a temporary controller if the count changed or isn't 3
+    final controller = excludeLessons 
+        ? TabController(length: tabs.length, vsync: this)
+        : _tabController;
+
+    return Column(
+      children: [
+        TabBar(
+          controller: controller,
+          labelColor: AppTheme.deepEmerald,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: AppTheme.deepEmerald,
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.grey.withOpacity(0.1),
+          labelStyle: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13),
+          tabs: tabs,
+        ),
+        SizedBox(
+          height: 600,
+          child: TabBarView(
+            controller: controller,
+            children: tabViews,
           ),
         ),
       ],
@@ -257,44 +343,67 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
       }
     }
     
-    final percent = lessons.isEmpty ? 0 : (completedCount / lessons.length * 100).toInt();
+    final percent = lessons.isEmpty ? 0.0 : (completedCount / lessons.length);
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'MODULE PROGRESS',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.slateGrey,
-                letterSpacing: 0.5,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryNavy,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.secondaryNavy.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'COLLECTION PROGRESS',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white.withValues(alpha: 0.5),
+                  letterSpacing: 1.5,
+                ),
               ),
-            ),
-            Text(
-              '$percent% complete',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF006B4D),
+              Text(
+                '${(percent * 100).toInt()}%',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.radiantGold,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: percent / 100,
-            backgroundColor: const Color(0xFF006B4D).withOpacity(0.1),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF006B4D)),
-            minHeight: 6,
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: percent,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.radiantGold),
+              minHeight: 10,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$completedCount of ${lessons.length} lessons completed',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -349,26 +458,26 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
     );
   }
 
-  Widget _buildPlaylist(String courseId, List<Lesson> lessons, String activeLessonId) {
+  Widget _buildPlaylist(String courseId, List<Lesson> lessons, String activePartId, int totalParts) {
     return ListView.builder(
-      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: lessons.length,
       itemBuilder: (context, index) {
         final lesson = lessons[index];
-        final isExpanded = lesson.id == activeLessonId;
+        final isExpanded = _expandedLessonId == lesson.id;
         
         return Column(
           children: [
             InkWell(
               onTap: () {
-                // If not expanded, navigate to first part of this lesson
-                if (!isExpanded) {
-                  context.go('/courses/${widget.courseSlug}/${lesson.slug}');
-                }
+                setState(() {
+                  _expandedLessonId = isExpanded ? null : lesson.id;
+                });
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                color: isExpanded ? const Color(0xFFE8F3EF).withOpacity(0.5) : Colors.transparent,
+                padding: const EdgeInsets.all(20),
+                color: isExpanded ? AppTheme.deepEmerald.withValues(alpha: 0.05) : Colors.white,
                 child: Row(
                   children: [
                     Expanded(
@@ -406,6 +515,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                 activePartSlug: widget.partSlug,
                 onPartSelected: (part) => _onPartSelected(part, lesson.id, courseId, lesson.slug),
                 courseSlug: widget.courseSlug,
+                totalParts: totalParts,
               ),
             const Divider(height: 1, color: Color(0xFFF0F0F0)),
           ],
@@ -420,18 +530,117 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
     return partsAsync.when(
       data: (parts) {
         final currentPart = _getCurrentLesson(parts);
-        if (currentPart == null || currentPart.transcript == null || currentPart.transcript!.isEmpty) {
-          return const Center(child: Text('No transcript available for this lesson.'));
-        }
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Text(
-            currentPart.transcript!,
-            style: GoogleFonts.inter(
-              height: 1.6,
-              fontSize: 15,
-              color: AppTheme.slateGrey,
+        if (currentPart == null) return const SizedBox.shrink();
+
+        final hasTranscript = currentPart.transcript != null && currentPart.transcript!.isNotEmpty;
+
+        if (!hasTranscript) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.softGold.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.auto_awesome, color: AppTheme.softGold, size: 40),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'No Transcript Yet',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.secondaryNavy,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We can generate a high-quality transcript using AI in real-time.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: AppTheme.slateGrey,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _isTranscribing ? null : () async {
+                      setState(() => _isTranscribing = true);
+                      try {
+                        await ref.read(aiRepositoryProvider).generateTranscript(
+                          courseId: courseId,
+                          lessonId: activePart.id,
+                          partId: currentPart.id,
+                          videoUrl: currentPart.videoUrl ?? '',
+                        );
+                        // The stream will automatically update once Firestore changes
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to generate transcript: $e')),
+                        );
+                      } finally {
+                        if (mounted) setState(() => _isTranscribing = false);
+                      }
+                    },
+                    icon: _isTranscribing 
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.auto_awesome, size: 18),
+                    label: Text(_isTranscribing ? 'Generating...' : 'Generate with AI'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.deepEmerald,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepEmerald.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.auto_awesome, size: 14, color: AppTheme.deepEmerald),
+                    const SizedBox(width: 6),
+                    Text(
+                      'AI Generated Transcript',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.deepEmerald,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                currentPart.transcript!,
+                style: GoogleFonts.inter(
+                  height: 1.8,
+                  fontSize: 15,
+                  color: AppTheme.slateGrey,
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -447,6 +656,7 @@ class _LessonPartList extends ConsumerWidget {
   final String? activePartSlug;
   final Function(LessonPart) onPartSelected;
   final String courseSlug;
+  final int totalParts;
 
   const _LessonPartList({
     required this.courseId,
@@ -454,6 +664,7 @@ class _LessonPartList extends ConsumerWidget {
     required this.activePartSlug,
     required this.onPartSelected,
     required this.courseSlug,
+    required this.totalParts,
   });
 
   @override
@@ -555,13 +766,14 @@ class _LessonPartList extends ConsumerWidget {
                           icon: const Icon(Icons.check_circle_outline, color: Color(0xFF006B4D)),
                           onPressed: () {
                             if (user != null) {
-                              ref.read(progressRepositoryProvider).updatePartProgress(
-                                uid: user.uid,
-                                courseId: courseId,
-                                lessonId: lesson.id,
-                                partId: part.id,
-                                completed: true,
-                              );
+                                ref.read(progressRepositoryProvider).updatePartProgress(
+                                  uid: user.uid,
+                                  courseId: courseId,
+                                  lessonId: lesson.id,
+                                  partId: part.id,
+                                  completed: true,
+                                  totalParts: totalParts,
+                                );
                             }
                           },
                         ),

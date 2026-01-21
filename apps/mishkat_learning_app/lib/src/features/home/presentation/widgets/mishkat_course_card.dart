@@ -2,32 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
+import '../../../courses/domain/models.dart';
 
 class MishkatCourseCard extends StatelessWidget {
-  final String title;
-  final String instructor;
-  final double rating;
-  final int reviews;
-  final String duration;
-  final String imageUrl;
-  final String? category;
-  final String? level;
-  final String? lessonCount;
-  final String slug;
+  final Course course;
   final double? width;
 
   const MishkatCourseCard({
     super.key,
-    required this.title,
-    required this.instructor,
-    required this.rating,
-    required this.reviews,
-    required this.duration,
-    required this.imageUrl,
-    this.category,
-    this.level,
-    this.lessonCount,
-    required this.slug,
+    required this.course,
     this.width,
   });
 
@@ -39,7 +22,7 @@ class MishkatCourseCard extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.push('/courses/$slug'),
+          onTap: () => context.push('/courses/${course.slug}'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -50,7 +33,7 @@ class MishkatCourseCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Image.network(
-                      imageUrl,
+                      course.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         // Fallback to gradient background if image fails
@@ -76,7 +59,7 @@ class MishkatCourseCard extends StatelessWidget {
                       },
                     ),
                     // Category Badge (if provided)
-                    if (category != null)
+                    if (course.category.isNotEmpty)
                       Positioned(
                         top: 12,
                         left: 12,
@@ -90,7 +73,7 @@ class MishkatCourseCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            category!.toUpperCase(),
+                            course.category.toUpperCase(),
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               fontSize: 9,
                               color: AppTheme.deepEmerald,
@@ -110,7 +93,7 @@ class MishkatCourseCard extends StatelessWidget {
                   children: [
                     // Title
                     Text(
-                      title,
+                      course.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -131,7 +114,7 @@ class MishkatCourseCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            instructor,
+                            course.instructorName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -145,81 +128,52 @@ class MishkatCourseCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     
                     // Bottom Row - Level/Lesson Count
-                    if (level != null || lessonCount != null)
-                      Row(
-                        children: [
-                          if (lessonCount != null) ...[
-                            const Icon(
-                              Icons.play_circle_outline,
-                              size: 14,
-                                    color: AppTheme.slateGrey,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              lessonCount!,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontSize: 11,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.play_circle_outline,
+                          size: 14,
                                 color: AppTheme.slateGrey,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                          if (lessonCount != null && level != null)
-                            const SizedBox(width: 12),
-                          if (level != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getLevelColor(level!).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                level!.toUpperCase(),
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  color: _getLevelColor(level!),
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                        ],
-                      )
-                    else
-                      // Rating row (fallback)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            color: AppTheme.radiantGold,
-                            size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${course.lessonCount} Parts',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                            color: AppTheme.slateGrey,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            rating.toString(),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontSize: 12,
-                              color: Colors.black,
+                        ),
+                        if (course.level.isNotEmpty) ...[
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '($reviews)',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 11,
-                              color: AppTheme.slateGrey,
+                            decoration: BoxDecoration(
+                              color: _getLevelColor(course.level).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              course.level.toUpperCase(),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: _getLevelColor(course.level),
+                                letterSpacing: 0.3,
+                              ),
                             ),
                           ),
                         ],
-                      ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ],
           ),
+
         ),
       ),
     );

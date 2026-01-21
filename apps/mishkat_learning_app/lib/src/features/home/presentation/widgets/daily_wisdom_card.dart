@@ -4,17 +4,24 @@ import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class DailyWisdomCard extends StatelessWidget {
   final String quote;
+  final String? quoteAr;
   final String source;
 
   const DailyWisdomCard({
     super.key,
     required this.quote,
+    this.quoteAr,
     required this.source,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(28.0),
         child: Column(
@@ -34,8 +41,11 @@ class DailyWisdomCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   source.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.slateGrey,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                    color: AppTheme.slateGrey.withValues(alpha: 0.6),
                   ),
                 ),
                 const Spacer(),
@@ -48,11 +58,32 @@ class DailyWisdomCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             
-            // Quote
+            // Arabic Quote (if present)
+            if (quoteAr != null) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  quoteAr!,
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                  style: GoogleFonts.amiri(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.deepEmerald,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // English Quote
             Text(
               quote,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: AppTheme.deepEmerald,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.secondaryNavy,
                 height: 1.6,
               ),
             ),

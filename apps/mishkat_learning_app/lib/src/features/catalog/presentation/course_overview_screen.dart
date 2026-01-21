@@ -9,6 +9,7 @@ import '../../auth/data/auth_repository.dart';
 import '../../courses/domain/models.dart';
 import '../../payments/data/payment_repository.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../../../widgets/common/mishkat_badge.dart';
 
 class CourseOverviewScreen extends ConsumerStatefulWidget {
   final String slug;
@@ -102,6 +103,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
   }
 
   Widget _buildMainLayout(BuildContext context, Course course, bool isEnrolled) {
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 1000;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -127,38 +131,253 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         surfaceTintColor: Colors.white,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildVideoHero(context, course),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCourseHeader(course),
-                  const SizedBox(height: 24),
-                  _buildStatsGrid(course),
-                  const SizedBox(height: 32),
-                  _buildAboutSection(course),
-                  const SizedBox(height: 32),
-                  _buildObjectivesSection(course),
-                  const SizedBox(height: 32),
-                  _buildInstructorBio(course),
-                  const SizedBox(height: 32),
-                  _buildSectionTitle('Course Outline'),
-                  const SizedBox(height: 16),
-                  _buildOutlineList(context, course),
-                  const SizedBox(height: 120), // Bottom padding for sticky bar
-                ],
-              ),
+      body: isWide 
+        ? _buildWideLayout(context, course, isEnrolled)
+        : _buildMobileLayout(context, course, isEnrolled),
+      bottomSheet: isWide ? null : _buildStickyBottomBar(context, course, isEnrolled),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, Course course, bool isEnrolled) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildVideoHero(context, course),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildCourseHeader(course),
+                const SizedBox(height: 24),
+                _buildStatsGrid(course),
+                const SizedBox(height: 32),
+                _buildAboutSection(course),
+                const SizedBox(height: 32),
+                _buildObjectivesSection(course),
+                const SizedBox(height: 32),
+                _buildInstructorBio(course),
+                const SizedBox(height: 32),
+                _buildSectionTitle('Course Outline'),
+                const SizedBox(height: 16),
+                _buildOutlineList(context, course),
+                const SizedBox(height: 120), // Bottom padding for sticky bar
+              ],
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWideLayout(BuildContext context, Course course, bool isEnrolled) {
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          padding: const EdgeInsets.all(40),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main Content
+              Expanded(
+                flex: 7,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCourseHeader(course),
+                    const SizedBox(height: 40),
+                    _buildAboutSection(course),
+                    const SizedBox(height: 40),
+                    _buildObjectivesSection(course),
+                    const SizedBox(height: 40),
+                    _buildInstructorBio(course),
+                    const SizedBox(height: 40),
+                    _buildSectionTitle('Course Outline'),
+                    const SizedBox(height: 24),
+                    _buildOutlineList(context, course),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 60),
+              // Sidebar
+              Expanded(
+                flex: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppTheme.slateGrey.withValues(alpha: 0.08)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildVideoHero(context, course),
+                      const SizedBox(height: 32),
+                      _buildSidebarPricing(context, course, isEnrolled),
+                      const SizedBox(height: 32),
+                      const Divider(),
+                      const SizedBox(height: 32),
+                      Text(
+                        'COURSE INCLUDES',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          color: AppTheme.slateGrey.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSidebarIncludeItem(Icons.movie_outlined, '12 hours of core content'),
+                      _buildSidebarIncludeItem(Icons.assignment_outlined, '8 Graded Quizzes'),
+                      _buildSidebarIncludeItem(Icons.all_inclusive, 'Full lifetime access'),
+                      _buildSidebarIncludeItem(Icons.smartphone, 'Access on mobile and web'),
+                      _buildSidebarIncludeItem(Icons.card_membership, 'Certificate of completion'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      bottomSheet: _buildStickyBottomBar(context, course, isEnrolled),
     );
+  }
+
+  Widget _buildSidebarPricing(BuildContext context, Course course, bool isEnrolled) {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         Text(
+           course.isFree ? 'FREE' : '\$${course.price.toStringAsFixed(2)}',
+           style: GoogleFonts.inter(
+             fontSize: 32,
+             fontWeight: FontWeight.bold,
+             color: AppTheme.deepEmerald,
+           ),
+         ),
+         const SizedBox(height: 24),
+         SizedBox(
+           width: double.infinity,
+           child: ElevatedButton(
+                onPressed: () => _handleEnrollment(context, course, isEnrolled),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  backgroundColor: AppTheme.deepEmerald,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isEnrolled ? 'Continue Learning' : 'Enroll Now',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
+                  ],
+                ),
+              ),
+         ),
+         const SizedBox(height: 16),
+         Center(
+           child: Text(
+             '30-Day Money-Back Guarantee',
+             style: GoogleFonts.inter(
+               fontSize: 12,
+               color: AppTheme.slateGrey.withValues(alpha: 0.5),
+             ),
+           ),
+         ),
+       ],
+     );
+  }
+
+  Widget _buildSidebarIncludeItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.slateGrey.withValues(alpha: 0.6)),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: AppTheme.secondaryNavy,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Factor out enrollment logic
+  Future<void> _handleEnrollment(BuildContext context, Course course, bool isEnrolled) async {
+    final user = ref.read(authStateProvider).value;
+    if (user == null) {
+      context.push('/login');
+      return;
+    }
+
+    if (isEnrolled) {
+      final lessons = await ref.read(lessonsProvider(course.id).future);
+      if (lessons.isNotEmpty && context.mounted) {
+        context.push('/courses/${course.slug}/${lessons.first.slug}');
+      }
+    } else if (course.isFree) {
+      await ref.read(progressRepositoryProvider).enrollUser(
+        uid: user.uid,
+        courseId: course.id,
+        accessType: 'free',
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Successfully enrolled!')),
+        );
+      }
+    } else {
+      try {
+        final price = course.price;
+        final orderId = await ref.read(paymentRepositoryProvider).createOrder(
+          amount: price,
+          currency: 'USD',
+          courseId: course.id,
+        );
+        
+        if (mounted) {
+          ref.read(paymentRepositoryProvider).openCheckout(
+            orderId: orderId,
+            amount: price,
+            name: course.title,
+            description: 'Course Enrollment: ${course.title}',
+            email: user.email ?? '',
+            contact: '',
+          );
+        }
+      } catch (e) {
+         if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error initiating payment: $e')),
+          );
+        }
+      }
+    }
   }
 
   // --- SECTION BUILDERS ---
@@ -251,7 +470,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
       data: (lessons) {
         if (lessons.isEmpty) return const Center(child: Text('No lessons available yet.'));
         return Column(
-          children: lessons.map((lesson) => _buildLessonTile(context, lesson, course)).toList(),
+          children: lessons.map((lesson) => _buildLessonTile(context, lesson, course, lessons)).toList(),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -268,21 +487,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         Row(
           children: [
             if (course.isPopular)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7), // Light amber
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'BESTSELLER',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF92400E), // Dark amber
-                  ),
-                ),
-              ),
+              const MishkatBadge(type: MishkatBadgeType.bestseller),
             if (course.isPopular) const SizedBox(width: 12),
             const Icon(Icons.star, color: Color(0xFFF59E0B), size: 18),
             const SizedBox(width: 4),
@@ -519,7 +724,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
     );
   }
 
-  Widget _buildLessonTile(BuildContext context, Lesson lesson, Course course) {
+  Widget _buildLessonTile(BuildContext context, Lesson lesson, Course course, List<Lesson> lessons) {
     final user = ref.watch(authStateProvider).value;
     final isEnrolled = user != null
         ? ref.watch(isEnrolledProvider((uid: user.uid, courseId: course.id))).value ?? false
@@ -535,7 +740,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
           ),
           child: ExpansionTile(
             title: Text(
-              lesson.title,
+              'Part ${lessons.indexOf(lesson) + 1}: ${lesson.title}',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -543,7 +748,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
               ),
             ),
             subtitle: Text(
-              '${parts.length} Parts • ${lesson.duration}',
+              '${parts.length} Lessons • ${lesson.duration}',
               style: GoogleFonts.inter(
                 fontSize: 12,
                 color: AppTheme.slateGrey.withValues(alpha: 0.6),
@@ -568,7 +773,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                   color: isQuiz ? AppTheme.radiantGold : AppTheme.slateGrey.withValues(alpha: 0.4),
                 ),
                 title: Text(
-                  part.title,
+                  '${parts.indexOf(part) + 1}. ${part.title}',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppTheme.secondaryNavy.withValues(alpha: 0.8),
@@ -636,59 +841,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
             const SizedBox(width: 24),
             Expanded(
               child: ElevatedButton(
-                onPressed: () async {
-                  final user = ref.read(authStateProvider).value;
-                  if (user == null) {
-                    context.push('/login');
-                    return;
-                  }
-
-                  if (isEnrolled) {
-                    // Navigate to the first lesson part
-                    final lessons = await ref.read(lessonsProvider(course.id).future);
-                    if (lessons.isNotEmpty) {
-                      context.push('/courses/${course.slug}/${lessons.first.slug}');
-                    }
-                  } else if (course.isFree) {
-                    // Enroll the user directly for free courses
-                    await ref.read(progressRepositoryProvider).enrollUser(
-                      uid: user.uid,
-                      courseId: course.id,
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Successfully enrolled!')),
-                      );
-                    }
-                  } else {
-                    // Process payment for paid courses
-                    try {
-                      final price = course.price;
-                      final orderId = await ref.read(paymentRepositoryProvider).createOrder(
-                        amount: price,
-                        currency: 'USD',
-                        courseId: course.id,
-                      );
-                      
-                      if (mounted) {
-                        ref.read(paymentRepositoryProvider).openCheckout(
-                          orderId: orderId,
-                          amount: price,
-                          name: course.title,
-                          description: 'Course Enrollment: ${course.title}',
-                          email: user.email ?? '',
-                          contact: '', // Optional
-                        );
-                      }
-                    } catch (e) {
-                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error initiating payment: $e')),
-                        );
-                      }
-                    }
-                  }
-                },
+                onPressed: () => _handleEnrollment(context, course, isEnrolled),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   backgroundColor: AppTheme.deepEmerald,

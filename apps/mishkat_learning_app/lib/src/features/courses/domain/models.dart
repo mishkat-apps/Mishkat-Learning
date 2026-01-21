@@ -23,6 +23,7 @@ class Course {
   final bool isPopular;
   final bool isNew;
   final String? videoUrl;
+  final int totalParts;
 
   Course({
     required this.id,
@@ -46,6 +47,7 @@ class Course {
     this.isPopular = false,
     this.isNew = false,
     this.videoUrl,
+    this.totalParts = 0,
   });
 
   factory Course.fromFirestore(DocumentSnapshot doc) {
@@ -72,6 +74,7 @@ class Course {
       isPopular: data['isPopular'] ?? false,
       isNew: data['isNew'] ?? false,
       videoUrl: data['videoUrl'],
+      totalParts: data['totalParts'] ?? data['lessonCount'] ?? 0,
     );
   }
 

@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart';
 import '../../auth/data/user_repository.dart';
 import '../../courses/data/course_repository.dart';
-import '../../courses/data/progress_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'widgets/continue_learning_card.dart';
 import 'widgets/daily_wisdom_card.dart';
 import 'widgets/mishkat_course_card.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
+import '../../courses/domain/models.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -18,292 +18,300 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final coursesAsync = ref.watch(coursesStreamProvider);
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 1000;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Header
-            Row(
-              children: [
-                GestureDetector(
-                  onTap: () => context.go('/profile'),
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.5), width: 2),
-                    ),
-                    child: authState.when(
-                      data: (user) {
-                        final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
-                        return profileAsync.when(
-                          data: (profile) => CircleAvatar(
-                            radius: 28,
-                            backgroundImage: (profile?.photoUrl != null && profile!.photoUrl!.isNotEmpty)
-                              ? NetworkImage(profile.photoUrl!) 
-                              : NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile?.displayName ?? 'User')}&background=004D40&color=fff'),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Welcome Header
+                  _buildHeader(context, ref, authState),
+                  const SizedBox(height: 32),
+
+                  if (isWide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Column (Learning & Wisdom)
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildContinueLearning(context, ref, authState),
+                              const SizedBox(height: 32),
+                              _buildDailyWisdom(),
+                            ],
                           ),
-                          loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
-                          error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
-                        );
-                      },
-                      loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
-                      error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                
-                // Greeting & App Name
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'MISHKAT LEARNING',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppTheme.radiantGold,
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      authState.when(
-                        data: (user) {
-                          final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
-                          return profileAsync.when(
-                            data: (profile) => Text(
-                              'Salam Alaykum, ${profile?.displayName.split(' ')[0] ?? 'Seeker'}',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.black,
-                              ),
-                            ),
-                            loading: () => const Text('Salam Alaykum...'),
-                            error: (_, __) => const Text('Salam Alaykum'),
-                          );
-                        },
-                        loading: () => const Text('Salam Alaykum...'),
-                        error: (_, __) => const Text('Salam Alaykum'),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Notification Icon with Badge
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                        const SizedBox(width: 40),
+                        // Right Column (Course Lists)
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildFeaturedCourses(context, coursesAsync),
+                              const SizedBox(height: 32),
+                              _buildNewAdditions(context, coursesAsync),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.notifications_outlined,
-                        color: AppTheme.deepEmerald,
-                        size: 24,
-                      ),
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
                         ),
-                      ),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildContinueLearning(context, ref, authState),
+                        const SizedBox(height: 32),
+                        _buildDailyWisdom(),
+                        const SizedBox(height: 40),
+                        _buildFeaturedCourses(context, coursesAsync),
+                        const SizedBox(height: 40),
+                        _buildNewAdditions(context, coursesAsync),
+                      ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Divider(color: Colors.black.withValues(alpha: 0.05), thickness: 1),
-            const SizedBox(height: 24),
-
-            // Continue Learning Section Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Continue Learning',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  'In Progress',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontSize: 13,
-                    color: AppTheme.deepEmerald,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Continue Learning Card
-            authState.when(
-              data: (user) {
-                if (user == null) {
-                  return _buildLoginPrompt(context);
-                }
-
-                final enrollmentsAsync = ref.watch(userEnrollmentsProvider(user.uid));
-                return enrollmentsAsync.when(
-                  data: (enrollments) {
-                    if (enrollments.isEmpty) {
-                      return _buildEmptyProgress(context);
-                    }
-
-                    // Get the latest enrollment
-                    final latest = enrollments.first;
-                    final courseId = latest['id'] as String;
-                    final completedParts = latest['completedParts'] as List? ?? [];
-
-                    return ref.watch(specificCourseProvider(courseId)).when(
-                          data: (course) {
-                            if (course == null) return const SizedBox.shrink();
-                            
-                            // Calculate progress
-                            final progress = course.lessonCount > 0 
-                                ? (completedParts.length / course.lessonCount) // This is a bit naive if lessonCount is lesson parts
-                                : 0.0;
-                            // For now, let's just assume we have parts. But we need total parts.
-                            // Better: Fetch total parts for the course.
-                            
-                            return ContinueLearningCard(
-                              courseTitle: course.title,
-                              currentLesson: 'Next Part', // Placeholder for now
-                              progress: progress,
-                              imageUrl: course.imageUrl,
-                              onPressed: () => context.push('/courses/${course.slug}'),
-                            );
-                          },
-                          loading: () => const Center(child: CircularProgressIndicator()),
-                          error: (e, s) => const SizedBox.shrink(),
-                        );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, s) => const SizedBox.shrink(),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, s) => const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 32),
-
-            // Daily Wisdom Section Header
-            Text(
-              'Daily Wisdom',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.black,
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Daily Wisdom Card
-            const DailyWisdomCard(
-              quote: 'The most complete gift of God is a life based on knowledge.',
-              source: 'Nahj al-Balagha',
-            ),
-            const SizedBox(height: 40),
-
-            // Featured Courses
-            _buildSectionHeader(context, 'Explore More Categories', 'Browse All'),
-            const SizedBox(height: 16),
-            coursesAsync.when(
-              data: (courses) => SizedBox(
-                height: 280,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: courses.length > 5 ? 5 : courses.length,
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return MishkatCourseCard(
-                      title: course.title,
-                      instructor: course.instructor,
-                      rating: course.rating,
-                      reviews: course.reviews,
-                      duration: course.duration,
-                      imageUrl: course.imageUrl,
-                      category: course.category,
-                      slug: course.slug,
-                    );
-                  },
-                ),
-              ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, __) => Text('Error loading courses: $err'),
-            ),
-            const SizedBox(height: 40),
-
-            // New Additions
-            _buildSectionHeader(context, 'New Additions', 'See all'),
-            const SizedBox(height: 16),
-            coursesAsync.when(
-              data: (courses) => SizedBox(
-                height: 280,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: courses.length > 3 ? 3 : courses.length,
-                  reverse: true, // Just to show something different
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return MishkatCourseCard(
-                      title: course.title,
-                      instructor: course.instructor,
-                      rating: course.rating,
-                      reviews: course.reviews,
-                      duration: course.duration,
-                      imageUrl: course.imageUrl,
-                      level: course.level,
-                      lessonCount: '${course.lessonCount} Lessons',
-                      slug: course.slug,
-                    );
-                  },
-                ),
-              ),
-              loading: () => const SizedBox.shrink(),
-              error: (err, __) => const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String actionText) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, AsyncValue authState) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => context.go('/profile'),
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.5), width: 2),
+            ),
+            child: authState.when(
+              data: (user) {
+                final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
+                return profileAsync.when(
+                  data: (profile) => CircleAvatar(
+                    radius: 28,
+                    backgroundImage: (profile?.photoUrl != null && profile!.photoUrl!.isNotEmpty)
+                      ? NetworkImage(profile.photoUrl!) 
+                      : NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile?.displayName ?? 'User')}&background=004D40&color=fff'),
+                  ),
+                  loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
+                  error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
+                );
+              },
+              loading: () => const CircleAvatar(radius: 28, child: CircularProgressIndicator()),
+              error: (_, __) => const CircleAvatar(radius: 28, child: Icon(Icons.error)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'MISHKAT LEARNING',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.radiantGold,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              authState.when(
+                data: (user) {
+                  final profileAsync = user != null ? ref.watch(userProfileProvider(user.uid)) : const AsyncValue.loading();
+                  return profileAsync.when(
+                    data: (profile) => Text(
+                      'Salam Alaykum, ${profile?.displayName.split(' ')[0] ?? 'Seeker'}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.secondaryNavy,
+                      ),
+                    ),
+                    loading: () => const Text('Salam Alaykum...'),
+                    error: (_, __) => const Text('Salam Alaykum'),
+                  );
+                },
+                loading: () => const Text('Salam Alaykum...'),
+                error: (_, __) => const Text('Salam Alaykum'),
+              ),
+            ],
+          ),
+        ),
+
+        // Notification Icon
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          ),
+          child: const Icon(Icons.notifications_none_rounded, color: AppTheme.secondaryNavy),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContinueLearning(BuildContext context, WidgetRef ref, AsyncValue authState) {
+    return authState.when(
+      data: (user) {
+        if (user == null) return _buildAuthPrompt(context);
+        final enrollmentsAsync = ref.watch(userEnrollmentsProvider(user.uid));
+
+        return enrollmentsAsync.when(
+          data: (enrollments) {
+            if (enrollments.isEmpty) return _buildNoEnrollments(context);
+
+            // Sort by enrolledAt descending to get the most recent one
+            final sortedEnrollments = List<Enrollment>.from(enrollments)
+              ..sort((a, b) => b.enrolledAt.compareTo(a.enrolledAt));
+            
+            final recentEnrollment = sortedEnrollments.first;
+            final courseId = recentEnrollment.courseId;
+            final progress = recentEnrollment.progress.toDouble();
+
+            final courseAsync = ref.watch(specificCourseProvider(courseId));
+
+            return courseAsync.when(
+              data: (course) {
+                if (course == null) return const SizedBox.shrink();
+                return ContinueLearningCard(
+                  course: course,
+                  progress: progress,
+                  onPressed: () => context.push('/courses/${course.slug}'),
+                );
+              },
+              loading: () => const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
+              error: (err, __) => Text('Error: $err'),
+            );
+          },
+          loading: () => const SizedBox(height: 150, child: Center(child: CircularProgressIndicator())),
+          error: (err, __) => Text('Error: $err'),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildDailyWisdom() {
+    return const DailyWisdomCard(
+      quote: 'The seeking of knowledge is obligatory for every Muslim.',
+      quoteAr: 'طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',
+      source: 'Prophet Muhammad (saw)',
+    );
+  }
+
+  Widget _buildFeaturedCourses(BuildContext context, AsyncValue<List<Course>> coursesAsync) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(context, 'Explore More', 'Browse All'),
+        const SizedBox(height: 16),
+        coursesAsync.when(
+          data: (courses) => SizedBox(
+            height: 280,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: courses.length > 5 ? 5 : courses.length,
+              itemBuilder: (context, index) {
+                final course = courses[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: SizedBox(
+                    width: 200,
+                    child: MishkatCourseCard(
+                      course: course,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Text('Error: $err'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewAdditions(BuildContext context, AsyncValue<List<Course>> coursesAsync) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(context, 'New Additions', 'See All'),
+        const SizedBox(height: 16),
+        coursesAsync.when(
+          data: (courses) {
+            final newCourses = courses.where((c) => c.isNew).toList();
+            return SizedBox(
+              height: 280,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: newCourses.length > 5 ? 5 : newCourses.length,
+                itemBuilder: (context, index) {
+                  final course = newCourses[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: SizedBox(
+                      width: 200,
+                      child: MishkatCourseCard(
+                        course: course,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Text('Error: $err'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title, String action) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: AppTheme.deepEmerald,
+          style: GoogleFonts.montserrat(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.secondaryNavy,
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: () => context.go('/courses'),
           child: Text(
-            actionText,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              fontSize: 13,
+            action,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.radiantGold,
             ),
           ),
         ),
@@ -311,13 +319,12 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLoginPrompt(BuildContext context) {
+  Widget _buildAuthPrompt(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppTheme.deepEmerald.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.deepEmerald.withOpacity(0.1)),
+        color: AppTheme.deepEmerald.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
@@ -325,28 +332,33 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Sign in to track your progress',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: GoogleFonts.montserrat(
               fontWeight: FontWeight.bold,
               color: AppTheme.secondaryNavy,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => context.push('/login'),
-            child: const Text('Login'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.deepEmerald,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Login', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyProgress(BuildContext context) {
+  Widget _buildNoEnrollments(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppTheme.radiantGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.radiantGold.withOpacity(0.1)),
+        color: AppTheme.radiantGold.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -354,23 +366,26 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Start your learning journey',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: GoogleFonts.montserrat(
               fontWeight: FontWeight.bold,
               color: AppTheme.secondaryNavy,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             "You haven't enrolled in any courses yet.",
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontSize: 13,
-            ),
+            style: GoogleFonts.inter(color: AppTheme.slateGrey, fontSize: 13),
           ),
           const SizedBox(height: 20),
           OutlinedButton(
             onPressed: () => context.go('/courses'),
-            child: const Text('Browse Courses'),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppTheme.radiantGold),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Browse Courses', style: TextStyle(color: AppTheme.radiantGold)),
           ),
         ],
       ),

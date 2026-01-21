@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/user_repository.dart';
@@ -22,11 +21,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 900;
+
     return authState.when(
       data: (user) {
         if (user == null) {
-          return const Center(child: Text('Please sign in to view your profile.'));
+          return const Scaffold(body: Center(child: Text('Please sign in to view your profile.')));
         }
         
         final profileAsync = ref.watch(userProfileProvider(user.uid));
@@ -34,126 +35,271 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         return profileAsync.when(
           data: (profile) {
             if (profile == null) {
-              return const Center(child: Text('Profile not found.'));
+              return const Scaffold(body: Center(child: Text('Profile not found.')));
             }
             
             return Scaffold(
-              body: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      // Profile Header
-                      Center(
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
+              backgroundColor: Colors.white,
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.secondaryNavy),
+                  onPressed: () => context.pop(),
+                ),
+                title: Text(
+                  'MY PROFILE',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                    color: AppTheme.secondaryNavy,
+                  ),
+                ),
+                centerTitle: true,
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: isWide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            GestureDetector(
-                              onTap: () => _pickAndUploadImage(context, ref, user.uid),
-                              child: Stack(
-                                alignment: Alignment.center,
+                            // Left Column
+                            Expanded(
+                              flex: 1,
+                              child: Column(
                                 children: [
-                                  CircleAvatar(
-                                    radius: 60,
-                                    backgroundColor: AppTheme.deepEmerald.withValues(alpha: 0.1),
-                                    backgroundImage: (profile.photoUrl != null && profile.photoUrl!.isNotEmpty)
-                                      ? NetworkImage(profile.photoUrl!) 
-                                      : NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.displayName)}&background=004D40&color=fff'),
-                                  ),
-                                  if (_isUploading)
-                                    const CircularProgressIndicator(color: AppTheme.radiantGold)
-                                  else
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: const BoxDecoration(
-                                          color: AppTheme.radiantGold,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                                      ),
-                                    ),
+                                  _buildProfileHeader(profile),
+                                  const SizedBox(height: 32),
+                                  _buildStatsRow(user.uid),
                                 ],
                               ),
                             ),
-                            _RankBadge(rank: profile.rank),
+                            const SizedBox(width: 48),
+                            // Right Column
+                            Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  _buildProfileMenu(context, ref, isWide),
+                                  const SizedBox(height: 32),
+                                  _buildCertificatesSection(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            _buildProfileHeader(profile),
+                            const SizedBox(height: 32),
+                            _buildStatsRow(user.uid),
+                            const SizedBox(height: 40),
+                            _buildProfileMenu(context, ref, false),
+                            const SizedBox(height: 40),
+                            _buildCertificatesSection(),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        profile.displayName,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontSize: 24,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        profile.role == 'admin' ? 'Administrator' : 'Dedicated Seeker of Knowledge', 
-                        style: const TextStyle(color: AppTheme.slateGrey),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Stats Grid
-                      Row(
-                        children: [
-                          ref.watch(userCourseCountProvider(user.uid)).when(
-                            data: (count) => _buildStatItem(count.toString(), 'Courses Done'),
-                            loading: () => _buildStatItem('...', 'Courses Done'),
-                            error: (_, __) => _buildStatItem('!', 'Courses Done'),
-                          ),
-                          const SizedBox(width: 16),
-                          _buildStatItem('${(profile.studyTimeMinutes / 60).toStringAsFixed(1)}h', 'Hours Studied'),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Certificates Section
-                      if (profile.certificates.isNotEmpty) ...[
-                        _buildSectionHeader('Earned Certificates'),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 200,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: profile.certificates.length,
-                            itemBuilder: (context, index) => _buildCertCard(profile.certificates[index]),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-
-                      // Menu List
-                      _buildMenuItem(context, ref, Icons.settings_outlined, 'Account Settings'),
-                      _buildMenuItem(context, ref, Icons.history_outlined, 'Payment History', onTap: () => context.push('/profile/payments')),
-                      _buildMenuItem(context, ref, Icons.language_outlined, 'App Language'),
-                      _buildMenuItem(context, ref, Icons.help_outline, 'Support & FAQ'),
-                      _buildMenuItem(context, ref, Icons.logout, 'Logout', isDestructive: true),
-                    ],
                   ),
                 ),
               ),
             );
           },
           loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-          error: (err, __) => Scaffold(body: Center(child: Text('Error: $err'))),
+          error: (err, _) => Scaffold(body: Center(child: Text('Error: $err'))),
         );
       },
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (err, __) => Scaffold(body: Center(child: Text('Error: $err'))),
+      error: (err, _) => Scaffold(body: Center(child: Text('Error: $err'))),
+    );
+  }
+
+  Widget _buildProfileHeader(dynamic profile) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            GestureDetector(
+              onTap: () => _pickAndUploadImage(context, ref, (ref.read(authStateProvider).value?.uid ?? '')),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.radiantGold.withValues(alpha: 0.3), width: 3),
+                    ),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: AppTheme.deepEmerald.withValues(alpha: 0.1),
+                      backgroundImage: (profile.photoUrl != null && profile.photoUrl!.isNotEmpty)
+                        ? NetworkImage(profile.photoUrl!) 
+                        : NetworkImage('https://ui-avatars.com/api/?name=${Uri.encodeComponent(profile.displayName)}&background=004D40&color=fff'),
+                    ),
+                  ),
+                  if (_isUploading)
+                    const CircularProgressIndicator(color: AppTheme.radiantGold)
+                  else
+                    Positioned(
+                      bottom: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.radiantGold,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            _RankBadge(rank: profile.rank),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          profile.displayName,
+          style: GoogleFonts.montserrat(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.secondaryNavy,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          profile.role == 'admin' ? 'Administrator' : 'Dedicated Seeker of Knowledge', 
+          style: GoogleFonts.inter(
+            color: AppTheme.slateGrey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsRow(String uid) {
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCard(
+            label: 'Courses Done', 
+            value: ref.watch(userCourseCountProvider(uid)).when(
+              data: (count) => '$count',
+              loading: () => '...',
+              error: (_, __) => '0',
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        const Expanded(
+          child: _StatCard(label: 'Hours Studied', value: '42.5'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileMenu(BuildContext context, WidgetRef ref, bool isWide) {
+    return Column(
+      children: [
+        _buildMenuOption(
+          context, 
+          'Account Settings', 
+          Icons.person_outline, 
+          onTap: () => context.push('/profile/settings')
+        ),
+        _buildMenuOption(
+          context, 
+          'Payment History', 
+          Icons.payment_outlined, 
+          onTap: () => context.push('/profile/payments')
+        ),
+        _buildMenuOption(
+          context, 
+          'App Language', 
+          Icons.language_outlined, 
+          onTap: () => context.push('/profile/language')
+        ),
+        _buildMenuOption(
+          context, 
+          'Support & FAQ', 
+          Icons.help_outline, 
+          onTap: () => context.push('/profile/support')
+        ),
+        _buildMenuOption(
+          context, 
+          'Logout', 
+          Icons.logout, 
+          color: Colors.redAccent, 
+          onTap: () async {
+            await ref.read(authRepositoryProvider).signOut();
+            if (context.mounted) {
+              context.go('/');
+            }
+          }
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuOption(BuildContext context, String label, IconData icon, {Color? color, VoidCallback? onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: color ?? AppTheme.secondaryNavy),
+      title: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontWeight: FontWeight.w600,
+          color: color ?? AppTheme.secondaryNavy,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+    );
+  }
+
+  Widget _buildCertificatesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Earned Certificates',
+          style: GoogleFonts.montserrat(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.secondaryNavy,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: AppTheme.slateGrey.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.slateGrey.withValues(alpha: 0.1)),
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.workspace_premium_outlined, color: Colors.grey, size: 48),
+              const SizedBox(height: 16),
+              const Text('No certificates earned yet', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Future<void> _pickAndUploadImage(BuildContext context, WidgetRef ref, String uid) async {
     final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 75,
-    );
+    final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 75);
 
     if (image == null) return;
 
@@ -162,16 +308,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       final bytes = await image.readAsBytes();
       await ref.read(userRepositoryProvider).uploadProfilePicture(uid, bytes);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile picture updated successfully!')),
-        );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile picture updated successfully!')));
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image: $e')),
-        );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
       }
     } finally {
       if (mounted) {
@@ -179,84 +321,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     }
   }
+}
 
-  Widget _buildStatItem(String value, String label) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.slateGrey.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          children: [
-            Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppTheme.deepEmerald,
-            )),
-            Text(label, style: const TextStyle(color: AppTheme.slateGrey, fontSize: 12)),
-          ],
-        ),
-      ),
-    );
-  }
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  const _StatCard({required this.label, required this.value});
 
-  Widget _buildCertCard(String title) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.deepEmerald,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.workspace_premium, color: AppTheme.radiantGold, size: 40),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          const Icon(Icons.download_outlined, color: Colors.white70, size: 20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.slateGrey.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: Colors.black,
-        ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.montserrat(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.deepEmerald,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.slateGrey,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildMenuItem(BuildContext context, WidgetRef ref, IconData icon, String label, {bool isDestructive = false, VoidCallback? onTap}) {
-    return ListTile(
-      leading: Icon(icon, color: isDestructive ? Colors.red : AppTheme.slateGrey),
-      title: Text(label, style: TextStyle(color: isDestructive ? Colors.red : AppTheme.slateGrey)),
-      trailing: const Icon(Icons.chevron_right, size: 20),
-      onTap: () async {
-        if (onTap != null) {
-          onTap();
-          return;
-        }
-        if (isDestructive && label == 'Logout') {
-          await ref.read(authRepositoryProvider).signOut();
-          if (context.mounted) context.go('/login');
-        }
-      },
     );
   }
 }

@@ -8,10 +8,8 @@ class ProgressRepository {
 
   Stream<bool> watchEnrollmentStatus(String uid, String courseId) {
     return _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('progress')
-        .doc(courseId)
+        .collection('enrollments')
+        .doc('${uid}_$courseId')
         .snapshots()
         .map((doc) => doc.exists);
   }
@@ -58,14 +56,16 @@ class ProgressRepository {
     required String lessonId,
     required String partId,
     required bool completed,
+    required int totalParts,
   }) async {
-    final docRef = _firestore
+    // 1. Update user-specific detailed progress
+    final userProgressRef = _firestore
         .collection('users')
         .doc(uid)
         .collection('progress')
         .doc(courseId);
 
-    await docRef.set({
+    await userProgressRef.set({
       'parts': {
         partId: {
           'completed': completed,
@@ -74,22 +74,63 @@ class ProgressRepository {
       },
       'lastUpdated': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+
+    // 2. Update global enrollment record for progress tracking
+    final enrollmentRef = _firestore.collection('enrollments').doc('${uid}_$courseId');
+    
+    // Get existing enrollment to calculate new progress
+    final enrollmentDoc = await enrollmentRef.get();
+    List completedParts = [];
+    
+    if (enrollmentDoc.exists) {
+      completedParts = List.from(enrollmentDoc.data()?['completedParts'] ?? []);
+    }
+
+    if (completed) {
+      if (!completedParts.contains(partId)) {
+        completedParts.add(partId);
+      }
+    } else {
+      completedParts.remove(partId);
+    }
+
+    final newProgress = totalParts > 0 
+        ? (completedParts.length / totalParts) * 100 
+        : 0.0;
+
+    await enrollmentRef.set({
+      'completedParts': completedParts,
+      'progress': newProgress,
+      'lastUpdated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   Future<void> enrollUser({
     required String uid,
     required String courseId,
+    String accessType = 'free',
   }) async {
-    final docRef = _firestore
+    final userProgressRef = _firestore
         .collection('users')
         .doc(uid)
         .collection('progress')
         .doc(courseId);
 
-    await docRef.set({
+    await userProgressRef.set({
+      'enrolledAt': FieldValue.serverTimestamp(),
+      'status': 'active',
+      'lastUpdated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    final enrollmentRef = _firestore.collection('enrollments').doc('${uid}_$courseId');
+    await enrollmentRef.set({
+      'uid': uid,
+      'courseId': courseId,
       'enrolledAt': FieldValue.serverTimestamp(),
       'status': 'active',
       'progress': 0.0,
+      'completedParts': [],
+      'accessType': accessType,
       'lastUpdated': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

@@ -2,22 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 import 'package:mishkat_learning_app/src/widgets/common/mishkat_progress_bar.dart';
+import '../../../courses/domain/models.dart';
 
 class ContinueLearningCard extends StatelessWidget {
-  final String courseTitle;
-  final String currentLesson;
+  final Course course;
   final double progress;
-  final String timeLeft;
-  final String? imageUrl;
   final VoidCallback? onPressed;
 
   const ContinueLearningCard({
     super.key,
-    required this.courseTitle,
-    required this.currentLesson,
+    required this.course,
     required this.progress,
-    this.timeLeft = '',
-    this.imageUrl,
     this.onPressed,
   });
 
@@ -30,7 +25,7 @@ class ContinueLearningCard extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(
-              imageUrl ?? 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+              course.imageUrl,
             ),
             fit: BoxFit.cover,
           ),
@@ -74,7 +69,7 @@ class ContinueLearningCard extends StatelessWidget {
               
               // Course Title
               Text(
-                courseTitle,
+                course.title,
                 style: GoogleFonts.montserrat(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -86,7 +81,7 @@ class ContinueLearningCard extends StatelessWidget {
               
               // Current Lesson
               Text(
-                currentLesson,
+                'by ${course.instructorName}',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: Colors.white.withValues(alpha: 0.9),
@@ -114,15 +109,6 @@ class ContinueLearningCard extends StatelessWidget {
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            if (timeLeft.isNotEmpty)
-                              Text(
-                                timeLeft.toUpperCase(),
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
                           ],
                         ),
                           const SizedBox(height: 8),

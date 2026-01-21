@@ -104,18 +104,8 @@ final userProfileProvider = StreamProvider.family<MishkatUser?, String>((ref, ui
 
 final userCourseCountProvider = StreamProvider.family<int, String>((ref, uid) {
   return FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('progress')
+      .collection('enrollments')
+      .where('uid', isEqualTo: uid)
       .snapshots()
       .map((snapshot) => snapshot.docs.length);
-});
-
-final userEnrollmentsProvider = StreamProvider.family<List<Map<String, dynamic>>, String>((ref, uid) {
-  return FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('progress')
-      .snapshots()
-      .map((snapshot) => snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList());
 });

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/data/auth_repository.dart';
 import '../domain/models.dart';
 
 class CourseRepository {
@@ -56,6 +57,27 @@ class CourseRepository {
     if (!doc.exists) return null;
     return Course.fromFirestore(doc);
   }
+
+  Stream<List<Enrollment>> watchUserEnrollments(String uid) {
+    return _firestore
+        .collection('enrollments')
+        .where('uid', isEqualTo: uid)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Enrollment.fromFirestore(doc)).toList();
+    });
+  }
+
+  Stream<List<Course>> watchCoursesByIds(List<String> ids) {
+    if (ids.isEmpty) return Stream.value([]);
+    return _firestore
+        .collection('courses')
+        .where(FieldPath.documentId, whereIn: ids)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Course.fromFirestore(doc)).toList();
+    });
+  }
 }
 
 final courseRepositoryProvider = Provider<CourseRepository>((ref) {
@@ -80,4 +102,26 @@ final lessonsProvider = StreamProvider.family<List<Lesson>, String>((ref, course
 
 final lessonPartsProvider = StreamProvider.family<List<LessonPart>, ({String courseId, String lessonId})>((ref, arg) {
   return ref.watch(courseRepositoryProvider).watchLessonParts(arg.courseId, arg.lessonId);
+});
+
+final userEnrollmentsProvider = StreamProvider.family<List<Enrollment>, String>((ref, uid) {
+  return ref.watch(courseRepositoryProvider).watchUserEnrollments(uid);
+});
+
+final enrolledCoursesProvider = StreamProvider<List<Course>>((ref) {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return Stream.value([]);
+  
+  final enrollmentsAsync = ref.watch(userEnrollmentsProvider(user.uid));
+  
+  return enrollmentsAsync.when(
+    data: (enrollments) {
+      if (enrollments.isEmpty) return Stream.value([]);
+      
+      final courseIds = enrollments.map((e) => e.courseId).toList();
+      return ref.watch(courseRepositoryProvider).watchCoursesByIds(courseIds);
+    },
+    loading: () => Stream.value([]),
+    error: (_, __) => Stream.value([]),
+  );
 });

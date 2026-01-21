@@ -6,7 +6,7 @@ import '../../../theme/app_theme.dart';
 import '../data/course_repository.dart';
 import '../domain/models.dart';
 import '../../auth/data/auth_repository.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../widgets/common/mishkat_badge.dart';
 
 class MyCoursesScreen extends ConsumerWidget {
   const MyCoursesScreen({super.key});
@@ -16,10 +16,12 @@ class MyCoursesScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).value;
     if (user == null) return const SizedBox.shrink();
 
-    // In a real app, you'd have an enrolledCoursesStreamProvider
-    // For now, we'll watch all courses and filter by whether they are enrolled
-    // (This is a simplified version for restoration)
-    final coursesAsync = ref.watch(coursesStreamProvider);
+    // Watch only the courses the user is enrolled in
+    final coursesAsync = ref.watch(enrolledCoursesProvider);
+    final enrollmentsAsync = user != null ? ref.watch(userEnrollmentsProvider(user.uid)) : null;
+
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 1000;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -37,31 +39,86 @@ class MyCoursesScreen extends ConsumerWidget {
             color: AppTheme.radiantGold, 
             fontWeight: FontWeight.bold, 
             fontSize: 18,
-            letterSpacing: 1.0,
+            letterSpacing: 2.0,
           ),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded, color: Colors.black),
-            onPressed: () {
-               // Notification Action
-            },
+            onPressed: () {},
           ),
           const SizedBox(width: 8),
         ],
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: coursesAsync.when(
         data: (courses) {
-          // TODO: Filter based on enrollment in Firestore
-          return ListView.builder(
-            padding: const EdgeInsets.all(24),
-            itemCount: courses.length,
-            itemBuilder: (context, index) {
-              final course = courses[index];
-              return _CourseEnrollmentCard(course: course);
-            },
+          if (courses.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   const Icon(Icons.school_outlined, size: 64, color: AppTheme.slateGrey),
+                   const SizedBox(height: 16),
+                   Text('No courses enrolled yet', style: GoogleFonts.inter(fontSize: 18, color: AppTheme.slateGrey)),
+                   const SizedBox(height: 16),
+                   ElevatedButton(
+                     onPressed: () => context.go('/courses'),
+                     style: ElevatedButton.styleFrom(
+                       backgroundColor: AppTheme.deepEmerald,
+                       foregroundColor: Colors.white,
+                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                     ),
+                     child: const Text('Explore Catalog'),
+                   ),
+                ],
+              ),
+            );
+          }
+          
+          return Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: isWide 
+                ? GridView.builder(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: courses.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 24,
+                      mainAxisSpacing: 24,
+                      mainAxisExtent: 420,
+                    ),
+                    itemBuilder: (context, index) {
+                      final course = courses[index];
+                      final enrollment = enrollmentsAsync?.value?.firstWhere(
+                        (e) => e.courseId == course.id, 
+                        orElse: () => Enrollment(uid: '', courseId: '', enrolledAt: DateTime.now(), progress: 0, status: '', accessType: '')
+                      );
+                      return _CourseEnrollmentCard(
+                        course: course,
+                        progress: enrollment?.progress ?? 0.0,
+                        isGrid: true,
+                      );
+                    },
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(24),
+                    itemCount: courses.length,
+                    itemBuilder: (context, index) {
+                      final course = courses[index];
+                      final enrollment = enrollmentsAsync?.value?.firstWhere(
+                        (e) => e.courseId == course.id, 
+                        orElse: () => Enrollment(uid: '', courseId: '', enrolledAt: DateTime.now(), progress: 0, status: '', accessType: '')
+                      );
+                      return _CourseEnrollmentCard(
+                        course: course,
+                        progress: enrollment?.progress ?? 0.0,
+                      );
+                    },
+                  ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.deepEmerald)),
@@ -73,12 +130,18 @@ class MyCoursesScreen extends ConsumerWidget {
 
 class _CourseEnrollmentCard extends StatelessWidget {
   final Course course;
-  const _CourseEnrollmentCard({required this.course});
+  final double progress;
+  final bool isGrid;
+  const _CourseEnrollmentCard({
+    required this.course, 
+    required this.progress,
+    this.isGrid = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: isGrid ? EdgeInsets.zero : const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -98,16 +161,29 @@ class _CourseEnrollmentCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AspectRatio(
-                aspectRatio: 21 / 9,
-                child: Image.network(
-                  course.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: AppTheme.slateGrey.withValues(alpha: 0.1),
-                    child: const Icon(Icons.image_not_supported),
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 21 / 9,
+                    child: Image.network(
+                      course.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppTheme.slateGrey.withValues(alpha: 0.1),
+                        child: const Icon(Icons.image_not_supported),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: MishkatBadge(
+                      type: progress >= 100 
+                          ? MishkatBadgeType.completed 
+                          : MishkatBadgeType.inProgress,
+                    ),
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -136,17 +212,17 @@ class _CourseEnrollmentCard extends StatelessWidget {
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(4),
-                            child: const LinearProgressIndicator(
-                              value: 0.0, // Replace with actual progress
-                              backgroundColor: Color(0xFFF0F0F0),
-                              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.softGold),
+                            child: LinearProgressIndicator(
+                              value: progress / 100, // progress is 0-100
+                              backgroundColor: const Color(0xFFF0F0F0),
+                              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.softGold),
                               minHeight: 8,
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          '0%', // Replace with actual progress
+                          '${progress.toInt()}%',
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
