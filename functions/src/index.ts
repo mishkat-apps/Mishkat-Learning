@@ -180,6 +180,9 @@ export const razorpayWebhook = onRequest(async (req, res) => {
                 status: 'active',
                 accessType: 'paid',
             }, { merge: true });
+
+            // Audit Log
+            await logAuditAction('SYSTEM', 'COURSE_ENROLL_WEBHOOK', `enrollments/${enrollmentId}`, { uid, courseId });
         }
     } else if (event === 'payment.failed') {
         const payment = body.payload.payment.entity;
@@ -197,3 +200,68 @@ export const razorpayWebhook = onRequest(async (req, res) => {
 
     res.status(200).send("ok");
 });
+
+/**
+ * Admin: Set User Role
+ * Sets custom claims for RBAC.
+ */
+export const adminSetUserRole = onCall(async (request: CallableRequest<any>) => {
+    // Check if the caller is an admin or the bootstrap UID
+    const isBootstrapAdmin = request.auth?.uid === 'opRxlWwXj7aMNkiScEn9nOSKryp1';
+    if (!request.auth || (!request.auth.token.admin && !isBootstrapAdmin)) {
+        throw new HttpsError('permission-denied', 'Only admins can set roles.');
+    }
+
+    const { targetUid, role } = request.data;
+
+    if (!targetUid || !role) {
+        throw new HttpsError('invalid-argument', 'Missing targetUid or role.');
+    }
+
+    // Role must be 'admin', 'teacher', or 'student' (standardized lowercase)
+    const allowedRoles = ['admin', 'teacher', 'student'];
+    if (!allowedRoles.includes(role)) {
+        throw new HttpsError('invalid-argument', 'Invalid role provided.');
+    }
+
+    try {
+        // Set custom claims
+        const claims: any = {};
+        if (role === 'admin') claims.admin = true;
+        if (role === 'teacher') claims.teacher = true;
+        // 'student' has no special claims beyond base auth
+
+        await admin.auth().setCustomUserClaims(targetUid, claims);
+
+        // Update Firestore profile for UI display (standardized)
+        await admin.firestore().collection('users').doc(targetUid).update({
+            role: role,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Audit Log
+        await logAuditAction(request.auth.uid, 'ROLE_CHANGE', `users/${targetUid}`, { newRole: role });
+
+        return { success: true, message: `Role ${role} set for user ${targetUid}` };
+    } catch (error) {
+        console.error('Set Role Error:', error);
+        throw new HttpsError('internal', 'Failed to set user role.');
+    }
+});
+
+/**
+ * Audit Logging Helper
+ */
+async function logAuditAction(actorUid: string, actionType: string, targetRef: string, metadata: any = {}) {
+    try {
+        await admin.firestore().collection('audit_logs').add({
+            actorUid,
+            actionType,
+            targetRef,
+            metadata,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+    } catch (error) {
+        console.error('Audit Log Error:', error);
+    }
+}

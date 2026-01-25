@@ -78,6 +78,59 @@ class CourseRepository {
       return snapshot.docs.map((doc) => Course.fromFirestore(doc)).toList();
     });
   }
+
+  Future<void> seedCourses() async {
+    final batch = _firestore.batch();
+    final coursesRef = _firestore.collection('courses');
+    
+    // 1. Philosophy of Karbala
+    final karbalaSnapshot = await coursesRef.where('title', isEqualTo: 'The Philosophy of Karbala').get();
+    for (var doc in karbalaSnapshot.docs) {
+      batch.update(doc.reference, {
+        'category': 'Ahl al-Bayt & Role Models',
+        'tagline': 'Uncovering the spiritual and intellectual foundations of the greatest sacrifice.',
+        'instructorTitle': 'Senior Scholar & Philosopher',
+        'instructorQuote': 'Karbala is not just a historical event; it is a timeless map for the soul seeking liberation.',
+        'features': [
+          '8.5 hours of high-definition video',
+          'Detailed English transcripts',
+          'Interactive discussion forums',
+          'Certificate of completion',
+          'Lifetime access to updates',
+        ],
+        'videoUrl': 'https://vimeo.com/1156003980',
+        'duration': '8.5 Hours',
+        'level': 'Intermediate',
+        'reviews': 0,
+        'rating': 0.0,
+      });
+    }
+
+    // 2. Introduction to Shia Theology
+    final theologySnapshot = await coursesRef.where('title', isEqualTo: 'Introduction to Shia Theology').get();
+    for (var doc in theologySnapshot.docs) {
+      batch.update(doc.reference, {
+        'category': 'Aqaid',
+        'tagline': 'A comprehensive journey into the core tenets of Shia Islamic thought.',
+        'instructorTitle': 'Professor of Islamic Philosophy',
+        'instructorQuote': 'Truth is a shoreless ocean; theology is our attempt to navigate its depths with the light of reason.',
+        'features': [
+          '12 progressive lessons',
+          '5 Graded assessments',
+          'Downloadable reading materials',
+          'Direct Q&A with instructor',
+          'Recognized digital badge',
+        ],
+        'videoUrl': 'https://vimeo.com/1156003980',
+        'duration': '12 Hours',
+        'level': 'Beginner',
+        'reviews': 0,
+        'rating': 0.0,
+      });
+    }
+
+    await batch.commit();
+  }
 }
 
 final courseRepositoryProvider = Provider<CourseRepository>((ref) {

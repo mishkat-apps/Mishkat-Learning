@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../theme/app_theme.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/user_repository.dart';
+import '../../courses/data/course_repository.dart';
+import '../../courses/data/subject_area_repository.dart';
+import '../../home/data/hadith_repository.dart';
 
 class AccountSettingsScreen extends ConsumerStatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -143,12 +146,94 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           'Save Changes',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.roboto(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
+                ),
+              ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Column(
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          await ref.read(subjectAreaRepositoryProvider).seedSubjectAreas();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Subject Areas Seeded Successfully!')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error seeding data: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: Text(
+                        'Seed Database (Subject Areas)',
+                        style: GoogleFonts.roboto(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
                         ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          await ref.read(hadithRepositoryProvider).seedHadithDatabase();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Hadith Database Seeded Successfully!')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error seeding hadith: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: Text(
+                        'Seed Database (Hadith)',
+                        style: GoogleFonts.roboto(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        try {
+                          await ref.read(courseRepositoryProvider).seedCourses();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Courses Seeded Successfully!')),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error seeding courses: $e')),
+                            );
+                          }
+                        }
+                      },
+                      child: Text(
+                        'Seed Database (Courses)',
+                        style: GoogleFonts.roboto(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -169,7 +254,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.roboto(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppTheme.slateGrey,

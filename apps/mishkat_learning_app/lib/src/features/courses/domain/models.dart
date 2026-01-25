@@ -18,12 +18,20 @@ class Course {
   final String level;
   final List<String> objectives;
   final List<String> subjectAreas;
-  final bool isFree;
+  final String accessType; // 'free' | 'paid'
+  bool get isFree => accessType == 'free';
   final double price;
   final bool isPopular;
   final bool isNew;
   final String? videoUrl;
   final int totalParts;
+  final String tagline;
+  final String instructorTitle;
+  final String instructorQuote;
+  final List<String> features;
+  final String status; // 'draft' | 'published' | 'archived'
+  final DateTime? publishedAt;
+  final DateTime? updatedAt;
 
   Course({
     required this.id,
@@ -42,16 +50,28 @@ class Course {
     required this.level,
     required this.objectives,
     required this.subjectAreas,
-    required this.isFree,
+    required this.accessType,
     required this.price,
     this.isPopular = false,
     this.isNew = false,
     this.videoUrl,
     this.totalParts = 0,
+    required this.tagline,
+    required this.instructorTitle,
+    required this.instructorQuote,
+    required this.features,
+    this.status = 'published',
+    this.publishedAt,
+    this.updatedAt,
   });
 
   factory Course.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
+    String imageUrl = data['imageUrl'] ?? '';
+    if (imageUrl.startsWith('gs://')) {
+      imageUrl = '';
+    }
+
     return Course(
       id: doc.id,
       title: data['title'] ?? '',
@@ -59,7 +79,7 @@ class Course {
       category: data['category'] ?? '',
       lessonCount: data['lessonCount'] ?? 0,
       description: data['about'] ?? data['description'] ?? '',
-      imageUrl: data['imageUrl'] ?? '',
+      imageUrl: imageUrl,
       instructorId: data['instructorId'] ?? '',
       instructorName: data['instructorName'] ?? data['instructor'] ?? '',
       rating: (data['rating'] ?? 0.0).toDouble(),
@@ -69,12 +89,19 @@ class Course {
       level: data['level'] ?? '',
       objectives: List<String>.from(data['objectives'] ?? []),
       subjectAreas: List<String>.from(data['subjectAreas'] ?? []),
-      isFree: data['isFree'] ?? false,
+      accessType: data['accessType'] ?? (data['isFree'] == true ? 'free' : 'paid'),
       price: (data['price'] ?? 0.0).toDouble(),
       isPopular: data['isPopular'] ?? false,
       isNew: data['isNew'] ?? false,
       videoUrl: data['videoUrl'],
       totalParts: data['totalParts'] ?? data['lessonCount'] ?? 0,
+      tagline: data['tagline'] ?? '',
+      instructorTitle: data['instructorTitle'] ?? '',
+      instructorQuote: data['instructorQuote'] ?? '',
+      features: List<String>.from(data['features'] ?? []),
+      status: data['status'] ?? 'published',
+      publishedAt: (data['publishedAt'] as Timestamp?)?.toDate(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -83,6 +110,54 @@ class Course {
     final regExp = RegExp(r'vimeo\.com\/(?:.*#|.*videos\/)?([0-9]+)');
     final match = regExp.firstMatch(url);
     return match?.group(1);
+  }
+}
+
+class CourseReview {
+  final String id;
+  final String courseId;
+  final String uid;
+  final String userName;
+  final String? userPhoto;
+  final double rating;
+  final String comment;
+  final DateTime createdAt;
+
+  CourseReview({
+    required this.id,
+    required this.courseId,
+    required this.uid,
+    required this.userName,
+    this.userPhoto,
+    required this.rating,
+    required this.comment,
+    required this.createdAt,
+  });
+
+  factory CourseReview.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return CourseReview(
+      id: doc.id,
+      courseId: data['courseId'] ?? '',
+      uid: data['uid'] ?? '',
+      userName: data['userName'] ?? 'Anonymous Seeker',
+      userPhoto: data['userPhoto'],
+      rating: (data['rating'] ?? 0.0).toDouble(),
+      comment: data['comment'] ?? '',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'courseId': courseId,
+      'uid': uid,
+      'userName': userName,
+      'userPhoto': userPhoto,
+      'rating': rating,
+      'comment': comment,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
   }
 }
 

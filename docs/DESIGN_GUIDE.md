@@ -10,7 +10,7 @@ This document outlines the design system and UI structure for the Mishkat Learni
 - **Text**: `#111827`
 
 ## Typography
-- **Font**: Inter or Outfit (Sans-serif)
+- **Font**: Roboto or Outfit (Sans-serif)
 - **Scale**:
   - H1: 32px Bold
   - H2: 24px Bold

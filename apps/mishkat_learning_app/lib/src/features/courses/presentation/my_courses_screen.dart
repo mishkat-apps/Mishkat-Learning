@@ -18,7 +18,7 @@ class MyCoursesScreen extends ConsumerWidget {
 
     // Watch only the courses the user is enrolled in
     final coursesAsync = ref.watch(enrolledCoursesProvider);
-    final enrollmentsAsync = user != null ? ref.watch(userEnrollmentsProvider(user.uid)) : null;
+    final enrollmentsAsync = ref.watch(userEnrollmentsProvider(user.uid));
 
     final width = MediaQuery.of(context).size.width;
     final isWide = width > 1000;
@@ -35,7 +35,7 @@ class MyCoursesScreen extends ConsumerWidget {
         centerTitle: true,
         title: Text(
           'MY COURSES',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.roboto(
             color: AppTheme.radiantGold, 
             fontWeight: FontWeight.bold, 
             fontSize: 18,
@@ -60,7 +60,7 @@ class MyCoursesScreen extends ConsumerWidget {
                 children: [
                    const Icon(Icons.school_outlined, size: 64, color: AppTheme.slateGrey),
                    const SizedBox(height: 16),
-                   Text('No courses enrolled yet', style: GoogleFonts.inter(fontSize: 18, color: AppTheme.slateGrey)),
+                   Text('No courses enrolled yet', style: GoogleFonts.roboto(fontSize: 18, color: AppTheme.slateGrey)),
                    const SizedBox(height: 16),
                    ElevatedButton(
                      onPressed: () => context.go('/courses'),
@@ -92,7 +92,7 @@ class MyCoursesScreen extends ConsumerWidget {
                     ),
                     itemBuilder: (context, index) {
                       final course = courses[index];
-                      final enrollment = enrollmentsAsync?.value?.firstWhere(
+                      final enrollment = enrollmentsAsync.value?.firstWhere(
                         (e) => e.courseId == course.id, 
                         orElse: () => Enrollment(uid: '', courseId: '', enrolledAt: DateTime.now(), progress: 0, status: '', accessType: '')
                       );
@@ -108,7 +108,7 @@ class MyCoursesScreen extends ConsumerWidget {
                     itemCount: courses.length,
                     itemBuilder: (context, index) {
                       final course = courses[index];
-                      final enrollment = enrollmentsAsync?.value?.firstWhere(
+                      final enrollment = enrollmentsAsync.value?.firstWhere(
                         (e) => e.courseId == course.id, 
                         orElse: () => Enrollment(uid: '', courseId: '', enrolledAt: DateTime.now(), progress: 0, status: '', accessType: '')
                       );

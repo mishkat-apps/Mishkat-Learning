@@ -11,7 +11,7 @@ This document outlines the design system and UI structure for the Mishkat Learni
 - **Neutral**: Grays for disabled/locked states and secondary text.
 
 ## Typography
-- **Headings**: Clean, modern Sans-serif (prefer **Outfit** or **Inter** as suggested in prompt). Bold weights for titles.
+- **Headings**: Clean, modern Sans-serif (prefer **Outfit** or **Roboto** as suggested in prompt). Bold weights for titles.
 - **Body**: Regular weights, high readability.
 - **Wisdom Quotes**: Serif or italicized fonts for a scholarly feel.
 

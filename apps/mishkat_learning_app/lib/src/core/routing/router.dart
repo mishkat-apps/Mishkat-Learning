@@ -15,6 +15,9 @@ import '../../features/courses/presentation/lesson_player_screen.dart';
 import '../../features/courses/presentation/my_courses_screen.dart';
 import '../../widgets/navigation/main_shell.dart';
 import '../../features/style_guide/presentation/brand_style_guide_screen.dart';
+import '../../features/info/presentation/about_screen.dart';
+import '../../features/info/presentation/contact_screen.dart';
+import '../../features/info/presentation/privacy_screen.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../services/router_notifier.dart';
 
@@ -25,21 +28,30 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     refreshListenable: notifier,
     redirect: (context, state) {
-      final authRepository = ref.read(authRepositoryProvider);
-      final user = authRepository.currentUser;
+      final authAsync = ref.watch(authStateProvider);
+      if (authAsync.isLoading) return null;
+      final user = authAsync.value;
+      
       final isLoggingIn = state.matchedLocation == '/login' || 
                           state.matchedLocation == '/register' ||
-                          state.matchedLocation == '/';
+                          state.matchedLocation == '/' ||
+                          state.matchedLocation == '/about' ||
+                          state.matchedLocation == '/contact' ||
+                          state.matchedLocation == '/privacy';
 
       if (user == null) {
         // Not logged in: allow only landing/auth pages
-        return isLoggingIn ? null : '/';
+        if (isLoggingIn) return null;
+        
+        
+        return '/';
       }
 
       // Logged in: if on landing/auth pages, go to dashboard
       if (isLoggingIn && state.matchedLocation != '/') {
         return '/dashboard';
       }
+
 
       // Don't redirect if already logged in and going to dashboard/other protected routes
       return null;
@@ -57,6 +69,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/contact',
+        builder: (context, state) => const ContactScreen(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      // App Routes
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -66,7 +91,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/courses',
-            builder: (context, state) => const CatalogScreen(),
+            builder: (context, state) => CatalogScreen(
+              initialFilter: state.uri.queryParameters['filter'],
+            ),
             routes: [
               GoRoute(
                 path: ':courseSlug',

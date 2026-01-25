@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:js_util' as js_util;
 import 'razorpay_js.dart' if (dart.library.io) 'razorpay_web_stub.dart';
 
@@ -20,7 +21,6 @@ class PaymentRepository {
   }) {
     _onSuccess = onSuccess;
     _onFailure = onFailure;
-    _onExternalWallet = onExternalWallet;
 
     if (!kIsWeb) {
       _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, onSuccess);
@@ -126,7 +126,6 @@ class PaymentRepository {
   // Store callbacks for web
   void Function(PaymentSuccessResponse)? _onSuccess;
   void Function(PaymentFailureResponse)? _onFailure;
-  void Function(ExternalWalletResponse)? _onExternalWallet;
 }
 
 final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {

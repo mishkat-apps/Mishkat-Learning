@@ -8,7 +8,15 @@ service firebase.storage {
     }
     
     function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && (
+        request.auth.token.admin == true || 
+        request.auth.uid == 'opRxlWwXj7aMNkiScEn9nOSKryp1' // Bootstrap Admin
+      );
+    }
+
+    match /courses/thumbnails/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /courses/{courseId}/{allPaths=**} {

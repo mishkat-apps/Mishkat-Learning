@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DailyWisdomCard extends StatelessWidget {
   final String quote;
   final String? quoteAr;
   final String source;
+  final String? reference;
 
   const DailyWisdomCard({
     super.key,
     required this.quote,
     this.quoteAr,
     required this.source,
+    this.reference,
   });
 
   @override
@@ -25,7 +28,6 @@ class DailyWisdomCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(28.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Row
             Row(
@@ -39,19 +41,48 @@ class DailyWisdomCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  source.toUpperCase(),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    color: AppTheme.slateGrey.withValues(alpha: 0.6),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        source.toUpperCase(),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          color: AppTheme.slateGrey.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      if (reference != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          reference!,
+                          style: GoogleFonts.roboto(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.share_outlined, size: 20),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final text = '$quote\n\n${quoteAr ?? ""}\n\n- $source\n${reference ?? ""}';
+                    try {
+                      await Share.share(text);
+                    } catch (e) {
+                      // Fallback for web or unsupported platforms
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Sharing not supported on this platform, copy text manually.')),
+                        );
+                      }
+                    }
+                  },
                   color: AppTheme.slateGrey,
                 ),
               ],
@@ -60,18 +91,14 @@ class DailyWisdomCard extends StatelessWidget {
             
             // Arabic Quote (if present)
             if (quoteAr != null) ...[
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  quoteAr!,
-                  textAlign: TextAlign.right,
-                  textDirection: TextDirection.rtl,
-                  style: GoogleFonts.amiri(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.deepEmerald,
-                    height: 1.6,
-                  ),
+              Text(
+                quoteAr!,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lateef(
+                  fontSize: 32,
+                  fontWeight: FontWeight.normal,
+                  color: AppTheme.deepEmerald,
+                  height: 1.8,
                 ),
               ),
               const SizedBox(height: 16),
@@ -80,7 +107,8 @@ class DailyWisdomCard extends StatelessWidget {
             // English Quote
             Text(
               quote,
-              style: GoogleFonts.inter(
+              textAlign: TextAlign.center,
+              style: GoogleFonts.roboto(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: AppTheme.secondaryNavy,

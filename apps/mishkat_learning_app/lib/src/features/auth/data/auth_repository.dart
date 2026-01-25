@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'user_repository.dart';
-import '../../courses/domain/models.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -14,12 +13,15 @@ class AuthRepository {
 
   AuthRepository(this._userRepository);
 
+
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
     await _ensureUserProfileCreated(credential.user);
+    
+    
     return credential;
   }
 
@@ -74,12 +76,12 @@ class AuthRepository {
     return userCredential;
   }
 
-  Future<void> _ensureUserProfileCreated(User? user) async {
-    if (user == null) return;
+  Future<MishkatUser?> _ensureUserProfileCreated(User? user) async {
+    if (user == null) return null;
     
-    final existingProfile = await _userRepository.getUserProfile(user.uid);
-    if (existingProfile == null) {
-      final newUser = MishkatUser(
+    var profile = await _userRepository.getUserProfile(user.uid);
+    if (profile == null) {
+      profile = MishkatUser(
         id: user.uid,
         email: user.email ?? '',
         displayName: user.displayName ?? user.email?.split('@')[0] ?? 'Seeker',
@@ -90,8 +92,9 @@ class AuthRepository {
         certificates: [],
         createdAt: DateTime.now(),
       );
-      await _userRepository.createUserProfile(newUser);
+      await _userRepository.createUserProfile(profile);
     }
+    return profile;
   }
 
   Future<void> signOut() async {

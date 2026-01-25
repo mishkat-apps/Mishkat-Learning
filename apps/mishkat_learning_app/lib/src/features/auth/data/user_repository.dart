@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,7 +23,7 @@ class MishkatUser {
     this.studyTimeMinutes = 0,
     this.certificates = const [],
     this.rank = 'Seeker',
-    this.role = 'Student',
+    this.role = 'student',
     this.createdAt,
   });
 
@@ -37,7 +38,7 @@ class MishkatUser {
       studyTimeMinutes: data['studyTimeMinutes'] ?? 0,
       certificates: List<String>.from(data['certificates'] ?? []),
       rank: data['rank'] ?? 'Seeker',
-      role: data['role'] ?? 'Student',
+      role: data['role'] ?? 'student',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -68,9 +69,7 @@ class UserRepository {
       'email': user.email,
       'enrolledCoursesCount': 0,
       'studyTimeMinutes': 0,
-      'certificates': [],
-      'rank': 'Seeker',
-      'role': 'Student',
+      'role': 'student',
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -89,9 +88,10 @@ class UserRepository {
 
   Future<String> uploadProfilePicture(String uid, dynamic file) async {
     // Stub for image upload - in a real app this would use Firebase Storage
-    print('Uploading profile picture for $uid...');
+    debugPrint('Uploading profile picture for $uid...');
     return ''; // Return dummy URL or handle as needed
   }
+
 }
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {

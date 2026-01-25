@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 
 class MainShell extends StatelessWidget {
@@ -45,15 +46,32 @@ class _Sidebar extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.lightbulb, color: AppTheme.radiantGold, size: 32),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'MISHKAT LEARNING',
-                    style: TextStyle(
-                      color: AppTheme.radiantGold,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
+                  const Icon(Icons.menu_book_rounded, color: AppTheme.radiantGold, size: 40),
+                  const SizedBox(height: 12),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'MISHKAT',
+                        style: GoogleFonts.montserrat(
+                          color: AppTheme.radiantGold,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                          letterSpacing: 2,
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        'LEARNING',
+                        style: GoogleFonts.montserrat(
+                          color: AppTheme.radiantGold,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                          letterSpacing: 4,
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -62,7 +80,6 @@ class _Sidebar extends StatelessWidget {
           const _NavTile(label: 'Dashboard', icon: Icons.dashboard_outlined, path: '/dashboard'),
           const _NavTile(label: 'Catalog', icon: Icons.menu_book_outlined, path: '/courses'),
           const _NavTile(label: 'My Courses', icon: Icons.school_outlined, path: '/my-courses'),
-          const _NavTile(label: 'Style Guide', icon: Icons.palette_outlined, path: '/style-guide'),
           const Spacer(),
           const _NavTile(label: 'Profile', icon: Icons.account_circle_outlined, path: '/profile'),
           const SizedBox(height: 20),

@@ -57,7 +57,7 @@ class ContinueLearningCard extends StatelessWidget {
                   ),
                   child: Text(
                     'In Progress',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.roboto(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class ContinueLearningCard extends StatelessWidget {
               // Current Lesson
               Text(
                 'by ${course.instructorName}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   fontSize: 14,
                   color: Colors.white.withValues(alpha: 0.9),
                   fontStyle: FontStyle.italic,
@@ -102,7 +102,7 @@ class ContinueLearningCard extends StatelessWidget {
                           children: [
                             Text(
                               '${(progress * 100).toInt()}% COMPLETE',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.roboto(
                                 color: Colors.white,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -144,7 +144,7 @@ class ContinueLearningCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           'Resume Study',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.roboto(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),

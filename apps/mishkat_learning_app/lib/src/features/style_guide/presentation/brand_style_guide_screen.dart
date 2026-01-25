@@ -138,7 +138,7 @@ class BrandStyleGuideScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(name, style: GoogleFonts.inter(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(name, style: GoogleFonts.roboto(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
           Text(hex, style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 11)),
         ],
       ),

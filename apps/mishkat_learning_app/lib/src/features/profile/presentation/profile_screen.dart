@@ -4,9 +4,9 @@ import 'package:mishkat_learning_app/src/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/data/user_repository.dart';
-import '../../courses/data/progress_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/router_notifier.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -46,7 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 scrolledUnderElevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppTheme.secondaryNavy),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.canPop() ? context.pop() : context.go('/dashboard'),
                 ),
                 title: Text(
                   'MY PROFILE',
@@ -175,7 +175,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         const SizedBox(height: 4),
         Text(
           profile.role == 'admin' ? 'Administrator' : 'Dedicated Seeker of Knowledge', 
-          style: GoogleFonts.inter(
+          style: GoogleFonts.roboto(
             color: AppTheme.slateGrey,
             fontWeight: FontWeight.w500,
           ),
@@ -206,8 +206,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildProfileMenu(BuildContext context, WidgetRef ref, bool isWide) {
+    final profile = ref.watch(currentUserProfileProvider).value;
+    final isAdmin = profile?.role.toLowerCase() == 'admin';
+
     return Column(
       children: [
+        if (isAdmin)
+          _buildMenuOption(
+            context, 
+            'Admin Panel', 
+            Icons.admin_panel_settings_outlined, 
+            color: AppTheme.radiantGold,
+            onTap: () => context.go('/admin')
+          ),
         _buildMenuOption(
           context, 
           'Account Settings', 
@@ -253,7 +264,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       leading: Icon(icon, color: color ?? AppTheme.secondaryNavy),
       title: Text(
         label,
-        style: GoogleFonts.inter(
+        style: GoogleFonts.roboto(
           fontWeight: FontWeight.w600,
           color: color ?? AppTheme.secondaryNavy,
         ),
@@ -357,7 +368,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.roboto(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppTheme.slateGrey,

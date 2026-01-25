@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +22,7 @@ class AIRepository {
       });
       return result.data['transcript'] as String;
     } catch (e) {
-      print('Error generating transcript: $e');
+      debugPrint('Error generating transcript: $e');
       rethrow;
     }
   }

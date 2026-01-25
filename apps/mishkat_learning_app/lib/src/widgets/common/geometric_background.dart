@@ -16,8 +16,9 @@ class GeometricBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: Alignment.center,
       children: [
-        Container(color: baseColor),
+        Positioned.fill(child: Container(color: baseColor)),
         Positioned.fill(
           child: CustomPaint(
             painter: _GeometricPainter(

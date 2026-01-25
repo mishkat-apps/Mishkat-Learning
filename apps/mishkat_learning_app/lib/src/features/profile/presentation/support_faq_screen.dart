@@ -63,7 +63,7 @@ class SupportFaqScreen extends StatelessWidget {
               child: ExpansionTile(
                 title: Text(
                   faq['question']!,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.roboto(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                     color: AppTheme.secondaryNavy,
@@ -74,7 +74,7 @@ class SupportFaqScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: Text(
                       faq['answer']!,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.roboto(
                         fontSize: 14,
                         color: AppTheme.slateGrey,
                         height: 1.5,
@@ -107,14 +107,14 @@ class SupportFaqScreen extends StatelessWidget {
                    Text(
                      'Our support team is available 24/7 to assist you on your journey.',
                      textAlign: TextAlign.center,
-                     style: GoogleFonts.inter(color: AppTheme.slateGrey, fontSize: 13),
+                     style: GoogleFonts.roboto(color: AppTheme.slateGrey, fontSize: 13),
                    ),
                    const SizedBox(height: 16),
                    TextButton(
                      onPressed: () {},
                      child: Text(
                        'support@mishkatlearning.com',
-                       style: GoogleFonts.inter(
+                       style: GoogleFonts.roboto(
                          fontWeight: FontWeight.bold,
                          color: AppTheme.deepEmerald,
                        ),

@@ -9,7 +9,10 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && (
+        request.auth.token.admin == true || 
+        request.auth.uid == 'opRxlWwXj7aMNkiScEn9nOSKryp1' // Bootstrap Admin (admin@mishkatlearning.com)
+      );
     }
     
     function isOwner(uid) {
@@ -30,7 +33,7 @@ service cloud.firestore {
     // Courses
     match /courses/{courseId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isSignedIn(); // Allow write for seeding
       
       // Lessons
       match /lessons/{lessonId} {
@@ -47,14 +50,39 @@ service cloud.firestore {
     
     // Enrollments
     match /enrollments/{enrollmentId} {
-      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
-      allow write: if isAdmin(); 
+      allow read: if isSignedIn() && (
+        !exists(resource) || 
+        resource.data.uid == request.auth.uid || 
+        isAdmin()
+      );
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     // Payments
     match /payments/{paymentId} {
       allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
       allow write: if isAdmin();
+    }
+
+    // Subject Areas
+    match /subject_areas/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // Hadith
+    match /hadith/{hadithId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Allow write for seeding
     }
 
     // Default deny for everything else

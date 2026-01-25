@@ -9,7 +9,6 @@ import '../data/progress_repository.dart';
 import '../domain/models.dart';
 import '../../ai/data/ai_repository.dart'; // Added this import
 import '../../auth/data/auth_repository.dart';
-import 'package:flutter/services.dart';
 
 class LessonPlayerScreen extends ConsumerStatefulWidget {
   final String courseSlug;
@@ -29,9 +28,7 @@ class LessonPlayerScreen extends ConsumerStatefulWidget {
 
 class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String? _activeLessonId;
   String? _expandedLessonId;
-  LessonPart? _activePart;
   bool _isTranscribing = false;
 
   @override
@@ -44,14 +41,8 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   void didUpdateWidget(LessonPlayerScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.lessonSlug != oldWidget.lessonSlug || widget.partSlug != oldWidget.partSlug) {
-      // Slugs changed (e.g. back button pressed), update state might be handled in build,
-      // but we need to reset active items if the URL changed drastically.
-      // Usually Riverpod + build logic handles this if we derive state from args.
-      // We'll rely on build to resolve the slugs to IDs.
       setState(() {
          // Force re-resolution
-         _activeLessonId = null;
-         _activePart = null;
       });
     }
   }
@@ -90,7 +81,6 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                activeLesson = lessons.where((l) => l.slug == widget.lessonSlug).firstOrNull;
             }
             activeLesson ??= lessons.first;
-            _activeLessonId = activeLesson.id;
             _expandedLessonId ??= activeLesson.id;
 
             return Scaffold(
@@ -255,10 +245,10 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
               ],
               Text(
                 'Part $partIndex: ${activeLesson.title}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppTheme.slateGrey.withOpacity(0.6),
+                  color: AppTheme.slateGrey.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 32),
@@ -312,7 +302,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
           unselectedLabelColor: Colors.grey,
           indicatorColor: AppTheme.deepEmerald,
           indicatorSize: TabBarIndicatorSize.tab,
-          dividerColor: Colors.grey.withOpacity(0.1),
+          dividerColor: Colors.grey.withValues(alpha: 0.1),
           labelStyle: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13),
           tabs: tabs,
         ),
@@ -366,7 +356,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
             children: [
               Text(
                 'COLLECTION PROGRESS',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   color: Colors.white.withValues(alpha: 0.5),
@@ -375,7 +365,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
               ),
               Text(
                 '${(percent * 100).toInt()}%',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.radiantGold,
@@ -396,7 +386,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
           const SizedBox(height: 12),
           Text(
             '$completedCount of ${lessons.length} lessons completed',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: Colors.white.withValues(alpha: 0.7),
@@ -486,7 +476,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                         children: [
                           Text(
                             'Part ${index + 1}: ${lesson.title}',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.roboto(
                               fontWeight: isExpanded ? FontWeight.bold : FontWeight.w500,
                               color: AppTheme.slateGrey,
                               fontSize: 14,
@@ -495,7 +485,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                           const SizedBox(height: 4),
                           Text(
                             lesson.duration,
-                            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                            style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -562,7 +552,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                   Text(
                     'We can generate a high-quality transcript using AI in real-time.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.roboto(
                       color: AppTheme.slateGrey,
                       fontSize: 14,
                     ),
@@ -571,6 +561,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                   ElevatedButton.icon(
                     onPressed: _isTranscribing ? null : () async {
                       setState(() => _isTranscribing = true);
+                      final messenger = ScaffoldMessenger.of(context);
                       try {
                         await ref.read(aiRepositoryProvider).generateTranscript(
                           courseId: courseId,
@@ -580,7 +571,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                         );
                         // The stream will automatically update once Firestore changes
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           SnackBar(content: Text('Failed to generate transcript: $e')),
                         );
                       } finally {
@@ -622,7 +613,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                     const SizedBox(width: 6),
                     Text(
                       'AI Generated Transcript',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.roboto(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.deepEmerald,
@@ -634,7 +625,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
               const SizedBox(height: 16),
               Text(
                 currentPart.transcript!,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   height: 1.8,
                   fontSize: 15,
                   color: AppTheme.slateGrey,
@@ -678,7 +669,7 @@ class _LessonPartList extends ConsumerWidget {
     return partsAsync.when(
       data: (parts) {
         return Container(
-          color: const Color(0xFFE8F3EF).withOpacity(0.5),
+          color: const Color(0xFFE8F3EF).withValues(alpha: 0.5),
           child: Column(
             children: parts.map((part) {
               final index = parts.indexOf(part) + 1;
@@ -698,7 +689,7 @@ class _LessonPartList extends ConsumerWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isCompleted ? const Color(0xFF006B4D) : Colors.grey.withOpacity(0.3),
+                            color: isCompleted ? const Color(0xFF006B4D) : Colors.grey.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                           color: isCompleted ? const Color(0xFF006B4D) : Colors.transparent,
@@ -708,7 +699,7 @@ class _LessonPartList extends ConsumerWidget {
                             ? const Icon(Icons.check, size: 16, color: Colors.white)
                             : Text(
                                 '$index',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.roboto(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey,
@@ -723,7 +714,7 @@ class _LessonPartList extends ConsumerWidget {
                           children: [
                             Text(
                               '$index. ${part.title}',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                                 color: AppTheme.slateGrey,
@@ -735,14 +726,14 @@ class _LessonPartList extends ConsumerWidget {
                               children: [
                                 Text(
                                   '${part.duration} • ',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.roboto(
                                     fontSize: 12,
                                     color: Colors.grey,
                                   ),
                                 ),
                                 Text(
                                   isActive ? 'Now Playing' : (isCompleted ? 'Completed' : ''),
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.roboto(
                                     fontSize: 12,
                                     color: isActive ? const Color(0xFF006B4D) : Colors.grey,
                                     fontWeight: isActive ? FontWeight.bold : FontWeight.normal,

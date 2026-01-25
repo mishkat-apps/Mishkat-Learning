@@ -51,6 +51,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/'),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
       body: GeometricBackground(
         child: Center(
           child: Container(
@@ -63,7 +72,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.lightbulb_outline,
+                      Icons.menu_book_rounded,
                       size: 48,
                       color: AppTheme.radiantGold,
                     ),

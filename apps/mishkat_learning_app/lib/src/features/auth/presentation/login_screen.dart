@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../theme/app_theme.dart';
 import '../data/auth_repository.dart';
 import '../../../widgets/common/geometric_background.dart';
@@ -80,6 +81,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/'),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
       body: GeometricBackground(
         child: Center(
           child: Container(
@@ -92,18 +102,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.lightbulb_outline,
+                      Icons.menu_book_rounded,
                       size: 48,
                       color: AppTheme.radiantGold,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Welcome Back',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.deepEmerald,
-                      ),
+                      style: Theme.of(context).textTheme.headlineLarge,
                     ),
                     const SizedBox(height: 8),
                     const Text(
@@ -151,7 +157,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const Expanded(child: Divider()),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('OR', style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.slateGrey)),
+                          child: Text('OR', style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                         ),
                         const Expanded(child: Divider()),
                       ],
@@ -160,15 +166,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _SocialButton(
-                          icon: 'assets/icons/google.png',
-                          onPressed: _isLoading ? null : _signInWithGoogle,
-                          label: 'Google',
+                        Expanded(
+                          child: _SocialButton(
+                            icon: FontAwesomeIcons.google,
+                            color: Colors.red,
+                            onPressed: _isLoading ? null : _signInWithGoogle,
+                            label: 'Google',
+                            isOutlined: true,
+                          ),
                         ),
-                        _SocialButton(
-                          icon: 'assets/icons/apple.png',
-                          onPressed: _isLoading ? null : _signInWithApple,
-                          label: 'Apple',
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _SocialButton(
+                            icon: FontAwesomeIcons.apple,
+                            color: Colors.black,
+                            onPressed: _isLoading ? null : _signInWithApple,
+                            label: 'Apple',
+                            isOutlined: false,
+                          ),
                         ),
                       ],
                     ),
@@ -240,27 +255,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 class _SocialButton extends StatelessWidget {
-  final String icon;
+  final IconData icon;
   final VoidCallback? onPressed;
   final String label;
+  final Color color;
+  final bool isOutlined;
 
   const _SocialButton({
     required this.icon,
     required this.onPressed,
     required this.label,
+    required this.color,
+    required this.isOutlined,
   });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
+    if (isOutlined) {
+      return OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: FaIcon(icon, size: 18, color: color),
+        label: Text(label, style: const TextStyle(color: Colors.black87)),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.black12),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: Colors.white,
+        ),
+      );
+    }
+    return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: const Icon(Icons.login, size: 18), // Placeholder until icons are ready
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppTheme.secondaryNavy,
-        side: const BorderSide(color: AppTheme.sacredCream),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      icon: FaIcon(icon, size: 18, color: Colors.white),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
       ),
     );
   }

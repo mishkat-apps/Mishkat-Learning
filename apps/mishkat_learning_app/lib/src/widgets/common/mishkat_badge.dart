@@ -54,7 +54,7 @@ class MishkatBadge extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 (label ?? config.defaultLabel).toUpperCase(),
-                style: GoogleFonts.inter(
+                style: GoogleFonts.roboto(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,

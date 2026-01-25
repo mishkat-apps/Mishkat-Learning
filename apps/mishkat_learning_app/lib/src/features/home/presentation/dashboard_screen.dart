@@ -5,6 +5,8 @@ import 'package:mishkat_learning_app/src/features/auth/data/auth_repository.dart
 import '../../auth/data/user_repository.dart';
 import '../../courses/data/course_repository.dart';
 import 'package:go_router/go_router.dart';
+import '../../home/data/hadith_repository.dart';
+import '../../home/domain/hadith.dart';
 import 'widgets/continue_learning_card.dart';
 import 'widgets/daily_wisdom_card.dart';
 import 'widgets/mishkat_course_card.dart';
@@ -18,6 +20,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
     final coursesAsync = ref.watch(coursesStreamProvider);
+    final dailyHadithAsync = ref.watch(dailyHadithProvider);
     final width = MediaQuery.of(context).size.width;
     final isWide = width > 1000;
 
@@ -48,7 +51,7 @@ class DashboardScreen extends ConsumerWidget {
                             children: [
                               _buildContinueLearning(context, ref, authState),
                               const SizedBox(height: 32),
-                              _buildDailyWisdom(),
+                              _buildDailyWisdom(dailyHadithAsync),
                             ],
                           ),
                         ),
@@ -73,7 +76,7 @@ class DashboardScreen extends ConsumerWidget {
                       children: [
                         _buildContinueLearning(context, ref, authState),
                         const SizedBox(height: 32),
-                        _buildDailyWisdom(),
+                        _buildDailyWisdom(dailyHadithAsync),
                         const SizedBox(height: 40),
                         _buildFeaturedCourses(context, coursesAsync),
                         const SizedBox(height: 40),
@@ -128,12 +131,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               Text(
                 'MISHKAT LEARNING',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.radiantGold,
-                  letterSpacing: 2,
-                ),
+                style: Theme.of(context).textTheme.labelSmall,
               ),
               const SizedBox(height: 2),
               authState.when(
@@ -142,11 +140,7 @@ class DashboardScreen extends ConsumerWidget {
                   return profileAsync.when(
                     data: (profile) => Text(
                       'Salam Alaykum, ${profile?.displayName.split(' ')[0] ?? 'Seeker'}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.secondaryNavy,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     loading: () => const Text('Salam Alaykum...'),
                     error: (_, __) => const Text('Salam Alaykum'),
@@ -216,11 +210,27 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDailyWisdom() {
-    return const DailyWisdomCard(
-      quote: 'The seeking of knowledge is obligatory for every Muslim.',
-      quoteAr: 'طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',
-      source: 'Prophet Muhammad (saw)',
+  Widget _buildDailyWisdom(AsyncValue<Hadith?> dailyHadithAsync) {
+    return dailyHadithAsync.when(
+      data: (hadith) {
+        if (hadith == null) {
+          // Fallback static or empty
+             return const DailyWisdomCard(
+              quote: 'The seeking of knowledge is obligatory for every Muslim.',
+              quoteAr: 'طَلَبُ الْعِلْمِ فَرِيضَةٌ عَلَى كُلِّ مُسْلِمٍ',
+              source: 'Prophet Muhammad (saw)',
+              reference: 'Al-Kafi',
+            );
+        }
+        return DailyWisdomCard(
+          quote: hadith.englishText,
+          quoteAr: hadith.arabicText,
+          source: hadith.narrator,
+          reference: hadith.reference,
+        );
+      },
+      loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -306,10 +316,16 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         TextButton(
-          onPressed: () => context.go('/courses'),
+          onPressed: () {
+            if (title == 'New Additions') {
+               context.go(Uri(path: '/courses', queryParameters: {'filter': 'new'}).toString());
+            } else {
+               context.go('/courses');
+            }
+          },
           child: Text(
             action,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.roboto(
               fontWeight: FontWeight.bold,
               color: AppTheme.radiantGold,
             ),
@@ -354,6 +370,7 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildNoEnrollments(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppTheme.radiantGold.withValues(alpha: 0.05),
@@ -376,7 +393,7 @@ class DashboardScreen extends ConsumerWidget {
           Text(
             "You haven't enrolled in any courses yet.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: AppTheme.slateGrey, fontSize: 13),
+            style: GoogleFonts.roboto(color: AppTheme.slateGrey, fontSize: 13),
           ),
           const SizedBox(height: 20),
           OutlinedButton(

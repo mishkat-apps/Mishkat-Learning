@@ -45,7 +45,7 @@ class LanguageSelectionScreen extends ConsumerWidget {
             leading: Text(lang['flag']!, style: const TextStyle(fontSize: 24)),
             title: Text(
               lang['name']!,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.roboto(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? AppTheme.deepEmerald : AppTheme.secondaryNavy,
               ),
