@@ -251,7 +251,7 @@ class _AdminCourseEditorState extends State<AdminCourseEditor> {
                       : null),
             ),
             child: (_selectedImageBytes == null && _imageUrlController.text.isEmpty)
-                ? const Icon(Icons.image_outlined, color: AdminTheme.textSecondary)
+                ? const Icon(Icons.image_outlined, color: AdminTheme.zinc400)
                 : null,
           ),
           const SizedBox(width: 24),
@@ -263,8 +263,10 @@ class _AdminCourseEditorState extends State<AdminCourseEditor> {
                 icon: const Icon(Icons.upload_file),
                 label: const Text('Choose Image'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AdminTheme.secondaryNavy,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AdminTheme.zinc100,
+                  foregroundColor: AdminTheme.zinc900,
+                  elevation: 0,
+                  side: const BorderSide(color: AdminTheme.zinc300),
                 ),
               ),
               if (_selectedImageName != null)
@@ -272,7 +274,7 @@ class _AdminCourseEditorState extends State<AdminCourseEditor> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'Selected: $_selectedImageName',
-                    style: const TextStyle(fontSize: 12, color: AdminTheme.primaryEmerald),
+                    style: const TextStyle(fontSize: 12, color: AdminTheme.zinc600),
                   ),
                 ),
             ],

@@ -33,7 +33,7 @@ service cloud.firestore {
     // Courses
     match /courses/{courseId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn(); // Allow write for seeding
+      allow write: if isAdmin(); // Restricted to admins
       
       // Lessons
       match /lessons/{lessonId} {
@@ -76,13 +76,13 @@ service cloud.firestore {
     // Subject Areas
     match /subject_areas/{subjectId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Hadith
     match /hadith/{hadithId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn(); // Allow write for seeding
+      allow write: if isAdmin(); // Restricted to admins
     }
 
     // Default deny for everything else

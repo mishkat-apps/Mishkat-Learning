@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mishkat_admin_dashboard/src/core/theme/admin_theme.dart';
 import 'package:mishkat_admin_dashboard/src/features/auth/data/auth_repository.dart';
-import 'package:mishkat_admin_dashboard/src/widgets/common/notification_popover.dart';
-import 'package:mishkat_admin_dashboard/src/widgets/common/user_profile_menu.dart';
 
 class MainLayout extends ConsumerWidget {
   final Widget child;
@@ -39,7 +36,6 @@ class MainLayout extends ConsumerWidget {
                           'MISHKAT',
                           style: TextStyle(
                             color: Colors.white,
-                            fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w900,
                             fontSize: 18,
                             letterSpacing: 2,
@@ -50,7 +46,6 @@ class MainLayout extends ConsumerWidget {
                           'ADMIN',
                           style: TextStyle(
                             color: AdminTheme.radiantGold,
-                            fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w700,
                             fontSize: 12,
                             letterSpacing: 4,
@@ -123,28 +118,6 @@ class MainLayout extends ConsumerWidget {
           Expanded(
             child: Column(
               children: [
-                // Top Header
-                Container(
-                  height: 70,
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Admin Dashboard',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: AdminTheme.secondaryNavy,
-                        ),
-                      ),
-                      const Spacer(),
-                      const NotificationPopover(),
-                      const SizedBox(width: 16),
-                      const UserProfileMenu(),
-                    ],
-                  ),
-                ),
                 // Main Content
                 Expanded(child: child),
               ],

@@ -23,9 +23,11 @@ class LessonPartEditor extends StatefulWidget {
 
 class _LessonPartEditorState extends State<LessonPartEditor> {
   final _titleController = TextEditingController();
+  final _slugController = TextEditingController();
   final _durationController = TextEditingController();
   final _videoUrlController = TextEditingController();
   final _contentController = TextEditingController();
+  final _transcriptController = TextEditingController();
   String _type = 'video';
 
   @override
@@ -33,11 +35,19 @@ class _LessonPartEditorState extends State<LessonPartEditor> {
     super.initState();
     if (widget.part != null) {
       _titleController.text = widget.part!.title;
+      _slugController.text = widget.part!.slug;
       _durationController.text = widget.part!.duration;
       _videoUrlController.text = widget.part!.videoUrl ?? '';
       _contentController.text = widget.part!.content ?? '';
+      _transcriptController.text = widget.part!.transcript ?? '';
       _type = widget.part!.type;
     }
+    
+    _titleController.addListener(() {
+      if (widget.part == null && _slugController.text.isEmpty) {
+        _slugController.text = _titleController.text.toLowerCase().replaceAll(' ', '-').replaceAll(RegExp(r'[^a-z0-9-]'), '');
+      }
+    });
   }
 
   @override
@@ -50,9 +60,24 @@ class _LessonPartEditorState extends State<LessonPartEditor> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g., Historical Context'),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(labelText: 'Title', hintText: 'e.g., Historical Context'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 1,
+                    child: TextField(
+                      controller: _slugController,
+                      decoration: const InputDecoration(labelText: 'Slug (URL id)', hintText: 'historical-context'),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Row(
@@ -76,9 +101,19 @@ class _LessonPartEditorState extends State<LessonPartEditor> {
               ),
               const SizedBox(height: 16),
               if (_type == 'video')
-                TextField(
-                  controller: _videoUrlController,
-                  decoration: const InputDecoration(labelText: 'Video URL (Vimeo/YouTube)', hintText: 'https://vimeo.com/...'),
+                Column(
+                  children: [
+                    TextField(
+                      controller: _videoUrlController,
+                      decoration: const InputDecoration(labelText: 'Video URL (Vimeo/YouTube)', hintText: 'https://vimeo.com/...'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _transcriptController,
+                      maxLines: 5,
+                      decoration: const InputDecoration(labelText: 'Transcript (Optional)', border: OutlineInputBorder()),
+                    ),
+                  ],
                 ),
               if (_type == 'reading')
                 TextField(
@@ -109,11 +144,13 @@ class _LessonPartEditorState extends State<LessonPartEditor> {
               final part = AdminLessonPart(
                 id: widget.part?.id ?? '',
                 title: _titleController.text,
+                slug: _slugController.text,
                 order: widget.part?.order ?? widget.nextOrder ?? 0,
                 type: _type,
                 duration: _durationController.text,
                 videoUrl: _type == 'video' ? _videoUrlController.text : null,
                 content: _type == 'reading' ? _contentController.text : null,
+                transcript: _type == 'video' ? _transcriptController.text : null,
               );
 
               if (widget.part == null) {

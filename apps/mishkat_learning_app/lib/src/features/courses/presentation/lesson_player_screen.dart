@@ -7,8 +7,9 @@ import '../../../theme/app_theme.dart';
 import '../data/course_repository.dart';
 import '../data/progress_repository.dart';
 import '../domain/models.dart';
-import '../../ai/data/ai_repository.dart'; // Added this import
+import '../../ai/data/ai_repository.dart';
 import '../../auth/data/auth_repository.dart';
+import 'widgets/universal_video_player.dart';
 
 class LessonPlayerScreen extends ConsumerStatefulWidget {
   final String courseSlug;
@@ -411,17 +412,14 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   }
 
   Widget _buildPlayerContainer(String? videoUrl) {
-    final videoId = Course.extractVimeoId(videoUrl);
-    if (videoId == null || videoId.isEmpty) return _buildPlaceholder();
+    if (videoUrl == null || videoUrl.isEmpty) return _buildPlaceholder();
 
     return AspectRatio(
       aspectRatio: 16 / 9,
-      child: Container(
-        color: Colors.black,
-        child: VimeoVideoPlayer(
-          key: ValueKey(videoId),
-          videoId: videoId,
-        ),
+      child: UniversalVideoPlayer(
+        key: ValueKey(videoUrl),
+        videoUrl: videoUrl,
+        autoPlay: false,
       ),
     );
   }

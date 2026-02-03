@@ -150,3 +150,78 @@ final class AdminUserListProvider
 }
 
 String _$adminUserListHash() => r'89ebe79e7808ea2042100fc112331694a143dfab';
+
+@ProviderFor(adminUserDetails)
+const adminUserDetailsProvider = AdminUserDetailsFamily._();
+
+final class AdminUserDetailsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<AdminUserModel>,
+          AdminUserModel,
+          FutureOr<AdminUserModel>
+        >
+    with $FutureModifier<AdminUserModel>, $FutureProvider<AdminUserModel> {
+  const AdminUserDetailsProvider._({
+    required AdminUserDetailsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'adminUserDetailsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminUserDetailsHash();
+
+  @override
+  String toString() {
+    return r'adminUserDetailsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<AdminUserModel> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<AdminUserModel> create(Ref ref) {
+    final argument = this.argument as String;
+    return adminUserDetails(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AdminUserDetailsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$adminUserDetailsHash() => r'21e23b4e94f6b5e4954fbb5397ae43b9baa142eb';
+
+final class AdminUserDetailsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<AdminUserModel>, String> {
+  const AdminUserDetailsFamily._()
+    : super(
+        retry: null,
+        name: r'adminUserDetailsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AdminUserDetailsProvider call(String uid) =>
+      AdminUserDetailsProvider._(argument: uid, from: this);
+
+  @override
+  String toString() => r'adminUserDetailsProvider';
+}

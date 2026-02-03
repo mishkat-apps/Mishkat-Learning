@@ -72,7 +72,7 @@ class KPICard extends StatelessWidget {
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AdminTheme.textPrimary,
+                    color: AdminTheme.zinc900,
                   ),
             ),
             const SizedBox(height: 4),

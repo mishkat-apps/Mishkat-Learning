@@ -2,66 +2,120 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AdminTheme {
-  // Primary brand palette
-  static const primaryEmerald = Color(0xFF064e3b);
-  static const deepEmerald = Color(0xFF042f2e);
-  static const radiantGold = Color(0xFFD4A017);
-  static const softGold = Color(0xFFE5C171);
-  static const secondaryNavy = Color(0xFF0D5E4D); // From main app theme
+  // Zinc Palette (Shadcn-like)
+  static const Color zinc950 = Color(0xFF09090B);
+  static const Color zinc900 = Color(0xFF18181B);
+  static const Color zinc800 = Color(0xFF27272A);
+  static const Color zinc700 = Color(0xFF3F3F46);
+  static const Color zinc600 = Color(0xFF52525B);
+  static const Color zinc500 = Color(0xFF71717A);
+  static const Color zinc400 = Color(0xFFA1A1AA);
+  static const Color zinc300 = Color(0xFFD4D4D8);
+  static const Color zinc200 = Color(0xFFE4E4E7);
+  static const Color zinc100 = Color(0xFFF4F4F5);
+  static const Color zinc50 = Color(0xFFFAFAFA);
+
+  // Semantic Colors
+  static const Color primary = zinc900;
+  static const Color primaryForeground = Colors.white;
+  static const Color secondary = zinc100;
+  static const Color secondaryForeground = zinc900;
+  static const Color muted = zinc100;
+  static const Color mutedForeground = zinc500;
+  static const Color accent = zinc100;
+  static const Color accentForeground = zinc900;
+  static const Color destructive = Color(0xFFEF4444);
+  static const Color destructiveForeground = Colors.white;
+  static const Color border = zinc200;
+  static const Color input = zinc200;
+  static const Color ring = zinc950;
   
-  // Dashboard specific
-  static const sidebarBackground = Color(0xFF064e3b);
-  static const sidebarHover = Color(0xFF065f46);
-  static const scaffoldBackground = Color(0xFFF4F7F6);
-  static const surfaceWhite = Colors.white;
-  static const textPrimary = Color(0xFF134E4A);
-  static const textSecondary = Color(0xFF64748B);
+  static const Color background = Colors.white;
+  static const Color foreground = zinc950;
+
+  // Legacy mappings for compatibility (will be refactored out)
+  static const Color primaryEmerald = zinc900; 
+  static const Color secondaryNavy = zinc900;
+  static const Color scaffoldBackground = Color(0xFFFBFBFB); // Slight off-white
+  static const Color textSecondary = zinc500;
+  static const Color surfaceWhite = Colors.white;
   
+  // Re-added for main_layout compatibility
+  static const Color sidebarBackground = zinc950;
+  static const Color radiantGold = Color(0xFFFFD700); // Gold
+  static const Color sidebarHover = zinc800;
+
   static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: scaffoldBackground,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryEmerald,
-        primary: primaryEmerald,
-        secondary: radiantGold,
-        surface: surfaceWhite,
-        error: Colors.redAccent,
+      colorScheme: const ColorScheme.light(
+        primary: primary,
+        onPrimary: primaryForeground,
+        secondary: secondary,
+        onSecondary: secondaryForeground,
+        surface: background,
+        onSurface: foreground,
+        error: destructive,
+        onError: destructiveForeground,
+        outline: border,
       ),
-      fontFamily: GoogleFonts.roboto().fontFamily,
-      textTheme: TextTheme(
-        headlineMedium: GoogleFonts.roboto(
-          fontWeight: FontWeight.bold,
-          color: textPrimary,
-          fontSize: 24,
-        ),
-        titleLarge: GoogleFonts.roboto(
-          fontWeight: FontWeight.w600,
-          color: textPrimary,
-          fontSize: 18,
-        ),
-        bodyLarge: GoogleFonts.roboto(
-          color: textPrimary,
-          fontSize: 16,
-        ),
-        bodyMedium: GoogleFonts.roboto(
-          color: textSecondary,
-          fontSize: 14,
-        ),
+      textTheme: GoogleFonts.outfitTextTheme().apply(
+        bodyColor: foreground,
+        displayColor: foreground,
       ),
-      cardTheme: CardThemeData(
+      /* cardTheme: CardTheme(
+        color: background,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: border, width: 1),
         ),
-        color: surfaceWhite,
+        margin: EdgeInsets.zero,
+      ), */
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: background,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: input),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: input),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: ring, width: 1.5),
+        ),
+        labelStyle: const TextStyle(color: zinc500, fontSize: 13),
+        hintStyle: const TextStyle(color: zinc400, fontSize: 13),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: surfaceWhite,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(color: primaryEmerald),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: primaryForeground,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: zinc900,
+          textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: zinc900,
+        size: 20,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: border,
+        thickness: 1,
+        space: 1,
       ),
     );
   }

@@ -128,28 +128,61 @@ class _LessonCardState extends ConsumerState<_LessonCard> {
     final partsAsync = ref.watch(partsListProvider((courseId: widget.courseId, lessonId: widget.lesson.id)));
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
+      // Theme handles shape/border. Use background color.
+      color: AdminTheme.background,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: AdminTheme.zinc200),
+      ),
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.drag_indicator, color: AdminTheme.textSecondary),
-            title: Text(widget.lesson.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(widget.lesson.duration, style: const TextStyle(fontSize: 12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminTheme.zinc100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.drag_indicator, size: 16, color: AdminTheme.zinc500),
+            ),
+            title: Text(widget.lesson.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            subtitle: Text(
+              widget.lesson.duration, 
+              style: const TextStyle(fontSize: 12, color: AdminTheme.mutedForeground)
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (!_isExpanded)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AdminTheme.zinc100,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${ref.watch(partsListProvider((courseId: widget.courseId, lessonId: widget.lesson.id))).asData?.value.length ?? 0} PARTS',
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AdminTheme.zinc500),
+                    ),
+                  ),
+                const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.add_circle_outline, color: AdminTheme.primaryEmerald),
+                  icon: const Icon(Icons.add, size: 20, color: AdminTheme.zinc900),
+                  tooltip: 'Add Part',
                   onPressed: () => _showAddPartDialog(context),
                 ),
                 IconButton(
-                  icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                  icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: AdminTheme.zinc500),
                   onPressed: () => setState(() => _isExpanded = !_isExpanded),
                 ),
                 PopupMenuButton(
+                  icon: const Icon(Icons.more_vert, size: 20, color: AdminTheme.zinc500),
                   itemBuilder: (context) => [
                     const PopupMenuItem(value: 'edit', child: Text('Edit Title')),
-                    const PopupMenuItem(value: 'delete', child: Text('Delete Lesson', style: TextStyle(color: Colors.red))),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete Lesson', style: TextStyle(color: AdminTheme.destructive))),
                   ],
                   onSelected: (val) {
                     if (val == 'delete') _confirmDelete(context);
@@ -161,10 +194,9 @@ class _LessonCardState extends ConsumerState<_LessonCard> {
           ),
           if (_isExpanded)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AdminTheme.scaffoldBackground.withValues(alpha: 0.5),
-                border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.2))),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AdminTheme.zinc200)),
+                color: AdminTheme.zinc50,
               ),
               child: partsAsync.when(
                 data: (parts) => _PartListView(
@@ -172,8 +204,8 @@ class _LessonCardState extends ConsumerState<_LessonCard> {
                   lessonId: widget.lesson.id,
                   parts: parts,
                 ),
-                loading: () => const Center(child: LinearProgressIndicator()),
-                error: (err, stack) => Text('Error loading parts: $err'),
+                loading: () => const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())),
+                error: (err, stack) => Padding(padding: const EdgeInsets.all(16), child: Text('Error: $err', style: const TextStyle(color: AdminTheme.destructive))),
               ),
             ),
         ],
@@ -248,32 +280,38 @@ class _PartListView extends ConsumerWidget {
       },
       itemBuilder: (context, index) {
         final part = parts[index];
-        return ListTile(
+        return Container(
           key: ValueKey(part.id),
-          dense: true,
-          leading: Icon(_getPartIcon(part.type), size: 20, color: AdminTheme.primaryEmerald),
-          title: Text(part.title),
-          subtitle: Text('${part.type.toUpperCase()} • ${part.duration}'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => LessonPartEditor(
-                    courseId: courseId,
-                    lessonId: lessonId,
-                    part: part,
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: AdminTheme.zinc200)),
+          ),
+          child: ListTile(
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            leading: Icon(_getPartIcon(part.type), size: 18, color: AdminTheme.zinc600),
+            title: Text(part.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+            subtitle: Text('${part.type.toUpperCase()} • ${part.duration}', style: const TextStyle(fontSize: 11, color: AdminTheme.mutedForeground)),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 16, color: AdminTheme.zinc500),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => LessonPartEditor(
+                      courseId: courseId,
+                      lessonId: lessonId,
+                      part: part,
+                    ),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                onPressed: () => ref.read(curriculumRepositoryProvider).deletePart(courseId, lessonId, part.id),
-              ),
-              const Icon(Icons.drag_handle, size: 18, color: AdminTheme.textSecondary),
-            ],
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 16, color: AdminTheme.destructive),
+                  onPressed: () => ref.read(curriculumRepositoryProvider).deletePart(courseId, lessonId, part.id),
+                ),
+                const Icon(Icons.drag_handle, size: 16, color: AdminTheme.zinc300),
+              ],
+            ),
           ),
         );
       },

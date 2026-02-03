@@ -67,3 +67,8 @@ Stream<List<AdminUserModel>> adminUserList(Ref ref) {
   final term = ref.watch(userSearchTermProvider);
   return ref.watch(adminUserRepositoryProvider).watchUsers(searchTerm: term);
 }
+
+@riverpod
+Future<AdminUserModel> adminUserDetails(Ref ref, String uid) {
+  return ref.watch(adminUserRepositoryProvider).getUser(uid);
+}

@@ -1,95 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mishkat_admin_dashboard/src/core/theme/admin_theme.dart';
 import 'package:mishkat_admin_dashboard/src/features/courses/data/admin_course_repository.dart';
 import 'package:mishkat_admin_dashboard/src/features/courses/domain/admin_course_model.dart';
 import 'package:mishkat_admin_dashboard/src/features/courses/presentation/widgets/admin_course_editor.dart';
+
+import 'package:mishkat_admin_dashboard/src/widgets/common/dashboard_header.dart'; // Add import
 
 class CourseCatalogScreen extends ConsumerWidget {
   const CourseCatalogScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Note: The parent MainLayout no longer provides a header.
+    // We use DashboardHeader here to provide the unified title + actions + profile.
+    
     final coursesAsync = ref.watch(adminCourseListProvider);
 
-
-    return Scaffold(
-      backgroundColor: AdminTheme.scaffoldBackground,
-      body: Column(
-        children: [
-          // Toolbar
-          Container(
-            padding: const EdgeInsets.all(24),
-            color: Colors.white,
-            child: Row(
-              children: [
-                Text(
-                  'Course Catalog', 
-                  style: GoogleFonts.roboto(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AdminTheme.secondaryNavy,
-                  ),
-                ),
-                const Spacer(),
-
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) => const AdminCourseEditor(),
-                  ),
-                  icon: const Icon(Icons.add),
-                  label: Text('CREATE COURSE', style: GoogleFonts.roboto(fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AdminTheme.primaryEmerald,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ],
+    return Column(
+      children: [
+        DashboardHeader(
+          title: 'Course Catalog',
+          subtitle: 'Manage your courses content',
+          action: ElevatedButton.icon(
+            onPressed: () => showDialog(
+              context: context,
+              builder: (context) => const AdminCourseEditor(),
+            ),
+            icon: const Icon(Icons.add),
+            label: const Text('Add Course'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AdminTheme.zinc900,
+              foregroundColor: Colors.white,
+              elevation: 0,
             ),
           ),
-          
-          const Divider(height: 1),
-
-          // Course Grid
-          Expanded(
-            child: coursesAsync.when(
-              data: (courses) => GridView.builder(
-                padding: const EdgeInsets.all(24),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 24,
-                  mainAxisSpacing: 24,
-                  childAspectRatio: 0.85,
-                ),
-                itemCount: courses.length,
-                itemBuilder: (context, index) => _CourseCard(course: courses[index]),
+        ),
+        
+        // Course Grid
+        Expanded(
+          child: coursesAsync.when(
+            data: (courses) => GridView.builder(
+              padding: const EdgeInsets.all(24),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 24,
+                mainAxisSpacing: 24,
+                childAspectRatio: 0.85,
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Center(child: Text('Error: $err')),
+              itemCount: courses.length,
+              itemBuilder: (context, index) => _CourseCard(course: courses[index]),
             ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-class _CourseCard extends StatefulWidget {
+class _CourseCard extends ConsumerStatefulWidget {
   final AdminCourseModel course;
 
   const _CourseCard({required this.course});
 
   @override
-  State<_CourseCard> createState() => _CourseCardState();
+  ConsumerState<_CourseCard> createState() => _CourseCardState();
 }
 
-class _CourseCardState extends State<_CourseCard> {
+class _CourseCardState extends ConsumerState<_CourseCard> {
   bool _isHovered = false;
 
   @override
@@ -100,119 +81,134 @@ class _CourseCardState extends State<_CourseCard> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: _isHovered 
-            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15, offset: const Offset(0, 8))]
-            : [],
-        ),
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: _isHovered ? AdminTheme.primaryEmerald.withValues(alpha: 0.5) : Colors.transparent,
-              width: 1,
-            ),
-          ),
-          elevation: _isHovered ? 4 : 1,
-          child: InkWell(
-            onTap: () {
-              // Ensure we use the ID for routing
-              context.push('/courses/${course.id}/curriculum', extra: course.title);
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: Container(
-                        color: AdminTheme.scaffoldBackground,
-                        child: course.imageUrl != null && course.imageUrl!.isNotEmpty
-                          ? Image.network(course.imageUrl!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.school_outlined, size: 48, color: AdminTheme.textSecondary))
-                          : const Icon(Icons.school_outlined, size: 48, color: AdminTheme.textSecondary),
+      child: Card(
+        // Theme handles shape and border
+        color: _isHovered ? AdminTheme.zinc50 : AdminTheme.background,
+        child: InkWell(
+          onTap: () {
+            context.push('/courses/${course.id}/curriculum', extra: course.title);
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image Section
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AdminTheme.zinc100,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
                       ),
+                      clipBehavior: Clip.antiAlias,
+                      child: course.imageUrl != null && course.imageUrl!.isNotEmpty
+                        ? Image.network(course.imageUrl!, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.image_not_supported, color: AdminTheme.zinc300))
+                        : const Icon(Icons.image, color: AdminTheme.zinc300),
                     ),
+                  ),
+                  if (course.status != 'active')
                     Positioned(
                       top: 8,
-                      left: 8,
-                      child: IconButton(
-                        icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.black45,
-                          padding: const EdgeInsets.all(8),
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AdminTheme.zinc100,
+                          border: Border.all(color: AdminTheme.zinc300),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                        onPressed: () => showDialog(
-                          context: context,
-                          builder: (context) => AdminCourseEditor(course: course),
+                        child: Text(
+                          'DRAFT', 
+                          style: TextStyle(
+                            color: AdminTheme.zinc600, 
+                            fontSize: 10, 
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                    if (course.status != 'active')
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text('DRAFT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      course.instructorName ?? 'No Instructor',
+                      style: const TextStyle(color: AdminTheme.mutedForeground, fontSize: 13),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          (course.accessType == 'free' || (course.price ?? 0) == 0) ? 'Free' : '\$${course.price?.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                         ),
-                      ),
+                        Row(
+                          children: [
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert, size: 20, color: AdminTheme.zinc500),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 150),
+                              onSelected: (value) async {
+                                final repo = ref.read(adminCourseRepositoryProvider);
+                                if (value == 'edit') {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AdminCourseEditor(course: course),
+                                  );
+                                } else if (value == 'duplicate') {
+                                  await repo.duplicateCourse(course);
+                                } else if (value == 'delete') {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Delete Course?'),
+                                      content: const Text('This will permanently delete this course and all its content.'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          style: ElevatedButton.styleFrom(backgroundColor: AdminTheme.destructive),
+                                          child: const Text('Delete'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed == true) {
+                                    await repo.deleteCourse(course.id);
+                                  }
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 12), Text('Edit Details')])),
+                                const PopupMenuItem(value: 'duplicate', child: Row(children: [Icon(Icons.copy_outlined, size: 18), SizedBox(width: 12), Text('Duplicate')])),
+                                const PopupMenuDivider(),
+                                const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, color: AdminTheme.destructive, size: 18), SizedBox(width: 12), Text('Delete', style: TextStyle(color: AdminTheme.destructive))])),
+                              ],
+                            ),
+                            if (_isHovered)
+                              const Icon(Icons.arrow_forward, size: 16, color: AdminTheme.zinc400),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-                
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        course.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.roboto(fontWeight: FontWeight.bold, fontSize: 16, height: 1.2),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        course.instructorName ?? 'No Instructor Set',
-                        style: GoogleFonts.roboto(color: AdminTheme.textSecondary, fontSize: 13),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Price', style: GoogleFonts.roboto(color: AdminTheme.textSecondary, fontSize: 11)),
-                              Text(
-                                (course.accessType == 'free' || (course.price ?? 0) == 0) ? 'FREE' : '\$${course.price?.toStringAsFixed(2)}',
-                                style: GoogleFonts.roboto(fontWeight: FontWeight.bold, color: AdminTheme.primaryEmerald),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AdminTheme.primaryEmerald.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.chevron_right, size: 16, color: AdminTheme.primaryEmerald),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

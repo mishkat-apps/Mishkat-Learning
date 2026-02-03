@@ -100,4 +100,35 @@ class AdminCourseModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'status': status == 'active' ? 'published' : status,
+      'accessType': accessType,
+      'price': price,
+      'salePrice': salePrice,
+      'type': type,
+      'instructorId': instructorId,
+      'instructorName': instructorName,
+      'instructorTitle': instructorTitle,
+      'instructorQuote': instructorQuote,
+      'enrolledCount': enrolledCount,
+      'slug': slug,
+      'category': category,
+      'description': description,
+      'about': description,
+      'imageUrl': imageUrl,
+      'tagline': tagline,
+      'videoUrl': videoUrl,
+      'duration': duration,
+      'level': level,
+      'objectives': objectives,
+      'subjectAreas': subjectAreas,
+      'features': features,
+      'publishedAt': publishedAt != null ? Timestamp.fromDate(publishedAt!) : null,
+      // createdAt and updatedAt handled by repository
+    };
+  }
 }

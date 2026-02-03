@@ -35,6 +35,7 @@ class AdminLesson {
 class AdminLessonPart {
   final String id;
   final String title;
+  final String slug;
   final int order;
   final String type; // video, reading, quiz
   final String? videoUrl;
@@ -45,6 +46,7 @@ class AdminLessonPart {
   AdminLessonPart({
     required this.id,
     required this.title,
+    required this.slug,
     required this.order,
     required this.type,
     this.videoUrl,
@@ -55,9 +57,17 @@ class AdminLessonPart {
 
   factory AdminLessonPart.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    
+    // Auto-generate slug if missing from title
+    String slug = data['slug'] ?? '';
+    if (slug.isEmpty) {
+      slug = (data['title'] as String).toLowerCase().replaceAll(' ', '-').replaceAll(RegExp(r'[^a-z0-9-]'), '');
+    }
+
     return AdminLessonPart(
       id: doc.id,
       title: data['title'] ?? '',
+      slug: slug,
       order: data['order'] ?? 0,
       type: data['type'] ?? 'video',
       videoUrl: data['videoUrl'],
@@ -70,6 +80,7 @@ class AdminLessonPart {
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
+      'slug': slug,
       'order': order,
       'type': type,
       if (videoUrl != null) 'videoUrl': videoUrl,

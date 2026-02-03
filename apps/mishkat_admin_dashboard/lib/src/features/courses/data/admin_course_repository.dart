@@ -86,6 +86,18 @@ class AdminCourseRepository {
     
     await _firestore.collection('courses').doc(id).update(updates);
   }
+
+  Future<void> deleteCourse(String id) async {
+    await _firestore.collection('courses').doc(id).delete();
+  }
+
+  Future<void> duplicateCourse(AdminCourseModel course) async {
+    final data = course.toFirestore();
+    data.remove('id');
+    data['title'] = '${data['title']} (Copy)';
+    data['status'] = 'draft';
+    await createCourse(data);
+  }
 }
 
 @riverpod
