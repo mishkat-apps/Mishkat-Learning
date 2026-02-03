@@ -118,10 +118,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         ),
         title: Text(
           'Course Overview',
-          style: GoogleFonts.montserrat(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: AppTheme.secondaryNavy,
+            fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
@@ -232,9 +231,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                       const SizedBox(height: 32),
                       Text(
                         'COURSE INCLUDES',
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           letterSpacing: 1.2,
                           color: AppTheme.slateGrey.withValues(alpha: 0.5),
                         ),
@@ -258,10 +255,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
        children: [
          Text(
            course.isFree ? 'FREE' : '\$${course.price.toStringAsFixed(2)}',
-           style: GoogleFonts.roboto(
-             fontSize: 32,
-             fontWeight: FontWeight.bold,
+           style: Theme.of(context).textTheme.displayMedium?.copyWith(
              color: AppTheme.deepEmerald,
+             fontWeight: FontWeight.bold,
            ),
          ),
          const SizedBox(height: 24),
@@ -281,10 +277,9 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                   children: [
                     Text(
                       isEnrolled ? 'Continue Learning' : 'Enroll Now',
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -381,6 +376,89 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
     }
   }
 
+  Future<void> _handleLessonTap(BuildContext context, Course course, Lesson lesson, LessonPart part, bool isEnrolled) async {
+    final user = ref.read(authStateProvider).value;
+    if (user == null) {
+      context.go('/login');
+      return;
+    }
+
+    if (course.slug.isEmpty || lesson.slug.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Navigation error: Missing data for ${lesson.title}')),
+      );
+      return;
+    }
+
+    if (isEnrolled) {
+      if (part.slug.isNotEmpty) {
+        context.goNamed(
+          'lesson_part',
+          pathParameters: {
+            'courseSlug': course.slug,
+            'lessonSlug': lesson.slug,
+            'partSlug': part.slug,
+          },
+        );
+      } else {
+        context.goNamed(
+          'lesson_player',
+          pathParameters: {
+            'courseSlug': course.slug,
+            'lessonSlug': lesson.slug,
+          },
+        );
+      }
+    } else if (course.isFree) {
+      // Auto-enroll if free and trying to watch
+      try {
+        await ref.read(progress_repository.progressRepositoryProvider).enrollUser(
+          uid: user.uid,
+          courseId: course.id,
+          accessType: 'free',
+        );
+        ref.invalidate(progress_repository.isEnrolledProvider((uid: user.uid, courseId: course.id)));
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Automatically enrolled in free course!')),
+          );
+          if (part.slug.isNotEmpty) {
+            context.goNamed(
+              'lesson_part',
+              pathParameters: {
+                'courseSlug': course.slug,
+                'lessonSlug': lesson.slug,
+                'partSlug': part.slug,
+              },
+            );
+          } else {
+            context.goNamed(
+              'lesson_player',
+              pathParameters: {
+                'courseSlug': course.slug,
+                'lessonSlug': lesson.slug,
+              },
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Enrollment failed: $e')),
+          );
+        }
+      }
+    } else {
+      // Paid course and not enrolled
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enroll to view course content.')),
+        );
+      }
+    }
+  }
+
   // --- SECTION BUILDERS ---
 
   Widget _buildAboutSection(Course course) {
@@ -400,9 +478,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
             const SizedBox(width: 12),
             Text(
               'About this course',
-              style: GoogleFonts.montserrat(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: AppTheme.secondaryNavy,
               ),
             ),
@@ -411,13 +487,53 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         const SizedBox(height: 16),
         Text(
           course.description,
-          style: GoogleFonts.roboto(
-            height: 1.6,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: AppTheme.slateGrey.withValues(alpha: 0.8),
-            fontSize: 15,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVideoHero(BuildContext context, Course course) {
+    final vimeoId = Course.extractVimeoId(course.videoUrl);
+    
+    if (vimeoId == null) {
+      return AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (course.imageUrl.isNotEmpty)
+              Image.network(
+                course.imageUrl,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppTheme.sacredCream, 
+                  child: const Icon(Icons.image, size: 50, color: AppTheme.slateGrey)
+                ),
+              )
+            else
+              Container(
+                color: AppTheme.sacredCream,
+                child: const Icon(Icons.video_library_outlined, size: 50, color: AppTheme.slateGrey),
+              ),
+            Container(
+              color: Colors.black.withValues(alpha: 0.3),
+            ),
+            const Icon(Icons.play_circle_fill, size: 64, color: Colors.white),
+          ],
+        ),
+      );
+    }
+
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: VimeoVideoPlayer(
+        videoId: vimeoId,
+        isAutoPlay: false,
+      ),
     );
   }
 
@@ -433,11 +549,10 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         children: [
           Text(
             'WHAT YOU WILL LEARN',
-            style: GoogleFonts.roboto(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               letterSpacing: 1.2,
               color: AppTheme.deepEmerald,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
@@ -513,58 +628,22 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
         const SizedBox(height: 16),
         Text(
           course.title,
-          style: GoogleFonts.roboto(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             color: AppTheme.secondaryNavy,
-            height: 1.2,
+            fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 12),
         Text(
           course.tagline,
-          style: GoogleFonts.roboto(
-            fontSize: 16,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppTheme.slateGrey.withValues(alpha: 0.7),
-            height: 1.5,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildVideoHero(BuildContext context, Course course) {
-    final vimeoId = Course.extractVimeoId(course.videoUrl);
-    
-    if (vimeoId == null) {
-      return AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Image.network(
-              course.imageUrl,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: AppTheme.sacredCream, child: const Icon(Icons.image, size: 50, color: AppTheme.slateGrey)),
-            ),
-            Container(
-              color: Colors.black.withValues(alpha: 0.3),
-            ),
-            const Icon(Icons.play_circle_fill, size: 64, color: Colors.white),
-          ],
-        ),
-      );
-    }
-
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: VimeoVideoPlayer(
-        videoId: vimeoId,
-        isAutoPlay: false,
-      ),
-    );
-  }
 
   Widget _buildStatsGrid(Course course) {
     return Row(
@@ -593,18 +672,16 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
           const SizedBox(height: 12),
           Text(
             label,
-            style: GoogleFonts.roboto(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppTheme.slateGrey.withValues(alpha: 0.6),
-              fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: GoogleFonts.roboto(
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
               color: AppTheme.secondaryNavy,
             ),
             textAlign: TextAlign.center,
@@ -657,9 +734,8 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                       children: [
                         Text(
                           course.instructorName,
-                          style: GoogleFonts.roboto(
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            fontSize: 18,
                             color: AppTheme.secondaryNavy,
                           ),
                         ),
@@ -707,8 +783,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
             ),
             subtitle: Text(
               '${parts.length} Lessons • ${lesson.duration}',
-              style: GoogleFonts.roboto(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppTheme.slateGrey.withValues(alpha: 0.6),
               ),
             ),
@@ -732,21 +807,17 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                 ),
                 title: Text(
                   '${parts.indexOf(part) + 1}. ${part.title}',
-                  style: GoogleFonts.roboto(
-                    fontSize: 14,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppTheme.secondaryNavy.withValues(alpha: 0.8),
                   ),
                 ),
                 trailing: Text(
                   isQuiz ? 'Graded' : part.duration,
-                  style: GoogleFonts.roboto(
-                    fontSize: 12,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.slateGrey.withValues(alpha: 0.5),
                   ),
                 ),
-                onTap: isEnrolled
-                    ? () => context.push('/courses/${course.slug}/${lesson.slug}')
-                    : null,
+                onTap: () => _handleLessonTap(context, course, lesson, part, isEnrolled),
               );
             }).toList(),
           ),
@@ -780,18 +851,15 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
               children: [
                 Text(
                    course.isFree ? 'FREE' : '\$${course.price.toStringAsFixed(2)}',
-                  style: GoogleFonts.roboto(
-                    fontSize: 24,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppTheme.deepEmerald,
                   ),
                 ),
                 Text(
                   'Full lifetime access',
-                  style: GoogleFonts.roboto(
-                    fontSize: 12,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppTheme.slateGrey.withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -812,8 +880,7 @@ class _CourseOverviewScreenState extends ConsumerState<CourseOverviewScreen> {
                   children: [
                     Text(
                       isEnrolled ? 'Continue Learning' : 'Enroll Now',
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),

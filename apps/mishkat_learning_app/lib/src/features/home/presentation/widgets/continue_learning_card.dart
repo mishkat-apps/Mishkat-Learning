@@ -57,11 +57,8 @@ class ContinueLearningCard extends StatelessWidget {
                   ),
                   child: Text(
                     'In Progress',
-                    style: GoogleFonts.roboto(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
@@ -70,11 +67,9 @@ class ContinueLearningCard extends StatelessWidget {
               // Course Title
               Text(
                 course.title,
-                style: GoogleFonts.montserrat(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Colors.white,
-                  height: 1.2,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
@@ -82,8 +77,7 @@ class ContinueLearningCard extends StatelessWidget {
               // Current Lesson
               Text(
                 'by ${course.instructorName}',
-                style: GoogleFonts.roboto(
-                  fontSize: 14,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
                   fontStyle: FontStyle.italic,
                 ),
@@ -102,11 +96,8 @@ class ContinueLearningCard extends StatelessWidget {
                           children: [
                             Text(
                               '${(progress * 100).toInt()}% COMPLETE',
-                              style: GoogleFonts.roboto(
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                 color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
                               ),
                             ),
                           ],
@@ -144,9 +135,9 @@ class ContinueLearningCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           'Resume Study',
-                          style: GoogleFonts.roboto(
-                            fontSize: 15,
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: AppTheme.deepEmerald,
                           ),
                         ),
                       ],

@@ -122,9 +122,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       children: [
         Text(
           'QUEST FOR WISDOM',
-          style: GoogleFonts.montserrat(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
             letterSpacing: 4,
             color: AppTheme.radiantGold,
           ),
@@ -133,7 +131,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         Text(
           'Illuminating the\nPath of Knowledge',
           textAlign: isDesktop || isTablet ? TextAlign.left : TextAlign.center,
-          style: GoogleFonts.montserrat(
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
             fontSize: isDesktop ? 64 : (isTablet ? 48 : 36),
             fontWeight: FontWeight.w900,
             color: Colors.white,
@@ -146,7 +144,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           child: Text(
             'Join an elite community of seekers dedicated to scholarly Shia teachings and spiritual excellence. Experience deep learning through high-quality video content and expert-led discussions.',
             textAlign: isDesktop || isTablet ? TextAlign.left : TextAlign.center,
-            style: GoogleFonts.roboto(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontSize: 18,
               color: Colors.white.withValues(alpha: 0.8),
               height: 1.6,
@@ -199,7 +197,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ),
             child: Text(
               'START LEARNING',
-              style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, letterSpacing: 1),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 1),
             ),
           ),
         ),
@@ -249,9 +247,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         children: [
           Text(
             'WHY MISHKAT LEARNING?',
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               letterSpacing: 2,
               color: AppTheme.radiantGold,
             ),
@@ -260,8 +256,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           Text(
             'Your Gateway to Authentic Wisdom',
             textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 32,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: AppTheme.secondaryNavy,
             ),
@@ -299,13 +294,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           const SizedBox(height: 24),
           Text(
             feature['title'] as String,
-            style: GoogleFonts.montserrat(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
           ),
           const SizedBox(height: 12),
           Text(
             feature['desc'] as String,
             textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(fontSize: 15, color: AppTheme.slateGrey, height: 1.5),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.slateGrey, height: 1.5),
           ),
         ],
       ),
@@ -323,8 +318,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             children: [
               Text(
                 'FEATURED COURSES',
-                style: GoogleFonts.montserrat(
-                  fontSize: 24,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.secondaryNavy,
                 ),
@@ -333,7 +327,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 onPressed: () => context.go('/courses'),
                 child: Row(
                   children: [
-                    Text('View All', style: GoogleFonts.roboto(fontWeight: FontWeight.bold, color: AppTheme.radiantGold)),
+                    Text('View All', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.radiantGold)),
                     const SizedBox(width: 8),
                     const Icon(Icons.arrow_forward_rounded, size: 16, color: AppTheme.radiantGold),
                   ],
@@ -472,12 +466,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       children: [
         Text(
           val,
-          style: GoogleFonts.montserrat(fontSize: 40, fontWeight: FontWeight.w900, color: AppTheme.radiantGold),
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w900, color: AppTheme.radiantGold, fontSize: 40),
         ),
         const SizedBox(height: 8),
         Text(
           label.toUpperCase(),
-          style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.white60, letterSpacing: 1.5),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white60, letterSpacing: 1.5),
         ),
       ],
     );
@@ -523,12 +517,12 @@ class _ModernCourseCardPlaceholder extends StatelessWidget {
               children: [
                 Text(
                   course.category.toUpperCase(),
-                  style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.radiantGold, letterSpacing: 1),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 9, color: AppTheme.radiantGold),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   course.title,
-                  style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: AppTheme.secondaryNavy),
                 ),
                 const SizedBox(height: 16),
                 Row(

@@ -309,10 +309,9 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.montserrat(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: AppTheme.secondaryNavy,
+            fontWeight: FontWeight.bold,
           ),
         ),
         TextButton(
@@ -325,9 +324,9 @@ class DashboardScreen extends ConsumerWidget {
           },
           child: Text(
             action,
-            style: GoogleFonts.roboto(
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: AppTheme.radiantGold,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -348,10 +347,9 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Sign in to track your progress',
-            style: GoogleFonts.montserrat(
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: AppTheme.secondaryNavy,
-              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
@@ -383,17 +381,18 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(
             'Start your learning journey',
-            style: GoogleFonts.montserrat(
-              fontWeight: FontWeight.bold,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: AppTheme.secondaryNavy,
-              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             "You haven't enrolled in any courses yet.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(color: AppTheme.slateGrey, fontSize: 13),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppTheme.slateGrey,
+            ),
           ),
           const SizedBox(height: 20),
           OutlinedButton(

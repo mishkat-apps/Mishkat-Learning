@@ -109,12 +109,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Welcome Back',
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.deepEmerald,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
+                      'Begin your search for divine wisdom',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.slateGrey),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
                       'Continue your journey for knowledge',
-                      style: TextStyle(color: AppTheme.slateGrey),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.slateGrey),
                     ),
                     const SizedBox(height: 40),
                     _buildTextField(
@@ -248,7 +256,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.deepEmerald, width: 1),
         ),
-        labelStyle: const TextStyle(color: AppTheme.slateGrey, fontSize: 14),
+        labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.slateGrey, fontSize: 14),
       ),
     );
   }

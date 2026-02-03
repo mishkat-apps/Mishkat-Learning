@@ -94,43 +94,40 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => CatalogScreen(
               initialFilter: state.uri.queryParameters['filter'],
             ),
-            routes: [
-              GoRoute(
-                path: ':courseSlug',
-                builder: (context, state) {
-                  final slug = state.pathParameters['courseSlug']!;
-                  return CourseOverviewScreen(slug: slug);
-                },
-                routes: [
-                  GoRoute(
-                    path: ':lessonSlug',
-                    builder: (context, state) {
-                      final courseSlug = state.pathParameters['courseSlug']!;
-                      final lessonSlug = state.pathParameters['lessonSlug']!;
-                      return LessonPlayerScreen(
-                        courseSlug: courseSlug,
-                        lessonSlug: lessonSlug,
-                      );
-                    },
-                    routes: [
-                       GoRoute(
-                        path: ':partSlug',
-                        builder: (context, state) {
-                          final courseSlug = state.pathParameters['courseSlug']!;
-                          final lessonSlug = state.pathParameters['lessonSlug']!;
-                          final partSlug = state.pathParameters['partSlug']!;
-                          return LessonPlayerScreen(
-                            courseSlug: courseSlug,
-                            lessonSlug: lessonSlug,
-                            partSlug: partSlug,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+          ),
+          GoRoute(
+            name: 'course_details',
+            path: '/courses/:courseSlug',
+            builder: (context, state) {
+              final slug = state.pathParameters['courseSlug']!;
+              return CourseOverviewScreen(slug: slug);
+            },
+          ),
+          GoRoute(
+            name: 'lesson_player',
+            path: '/courses/:courseSlug/:lessonSlug',
+            builder: (context, state) {
+              final courseSlug = state.pathParameters['courseSlug']!;
+              final lessonSlug = state.pathParameters['lessonSlug']!;
+              return LessonPlayerScreen(
+                courseSlug: courseSlug,
+                lessonSlug: lessonSlug,
+              );
+            },
+          ),
+          GoRoute(
+            name: 'lesson_part',
+            path: '/courses/:courseSlug/:lessonSlug/:partSlug',
+            builder: (context, state) {
+              final courseSlug = state.pathParameters['courseSlug']!;
+              final lessonSlug = state.pathParameters['lessonSlug']!;
+              final partSlug = state.pathParameters['partSlug']!;
+              return LessonPlayerScreen(
+                courseSlug: courseSlug,
+                lessonSlug: lessonSlug,
+                partSlug: partSlug,
+              );
+            },
           ),
           GoRoute(
             path: '/my-courses',

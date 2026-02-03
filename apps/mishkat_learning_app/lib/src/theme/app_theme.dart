@@ -46,6 +46,18 @@ class AppTheme {
       fontFamily: GoogleFonts.geist().fontFamily,
       textTheme: TextTheme(
         // Brand Title Headers (e.g., "MISHKAT LEARNING", "COURSE CATALOG")
+        displayLarge: GoogleFonts.montserrat(
+          fontSize: 32,
+          fontWeight: FontWeight.w900,
+          color: deepEmerald,
+          letterSpacing: -1.0,
+        ),
+        displayMedium: GoogleFonts.montserrat(
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+          color: secondaryNavy,
+          letterSpacing: -0.5,
+        ),
         displaySmall: GoogleFonts.montserrat(
           fontSize: 18,
           fontWeight: FontWeight.w800,
@@ -67,12 +79,22 @@ class AppTheme {
           color: secondaryNavy,
           height: 1.3,
         ),
+        headlineSmall: GoogleFonts.montserrat(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: secondaryNavy,
+        ),
         // Section titles (e.g., "About", "Student Reviews")
         titleLarge: GoogleFonts.montserrat(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: secondaryNavy,
           letterSpacing: -0.3,
+        ),
+        titleMedium: GoogleFonts.montserrat(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: secondaryNavy,
         ),
         // Sub-labels (e.g., "Taught by")
         titleSmall: GoogleFonts.geist(

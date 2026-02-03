@@ -56,8 +56,16 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
   }
 
   void _onPartSelected(LessonPart part, String lessonId, String courseId, String lessonSlug) {
-    // Navigate to the new URL to preserve history
-    context.go('/courses/${widget.courseSlug}/$lessonSlug/${part.slug}');
+    if (part.slug.isNotEmpty) {
+      context.goNamed(
+        'lesson_part',
+        pathParameters: {
+          'courseSlug': widget.courseSlug,
+          'lessonSlug': lessonSlug,
+          'partSlug': part.slug,
+        },
+      );
+    }
   }
 
   @override
@@ -107,13 +115,16 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> with Si
                 ],
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.slateGrey, size: 20),
-                  onPressed: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/courses/${widget.courseSlug}');
-                    }
-                  },
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.goNamed(
+                      'course_details',
+                      pathParameters: {'courseSlug': widget.courseSlug},
+                    );
+                  }
+                },
                 ),
               ),
               body: isWide 

@@ -47,10 +47,7 @@ class DailyWisdomCard extends StatelessWidget {
                     children: [
                       Text(
                         source.toUpperCase(),
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: AppTheme.slateGrey.withValues(alpha: 0.6),
                         ),
                       ),
@@ -58,9 +55,7 @@ class DailyWisdomCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           reference!,
-                          style: GoogleFonts.roboto(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey,
                           ),
                         ),
@@ -108,9 +103,7 @@ class DailyWisdomCard extends StatelessWidget {
             Text(
               quote,
               textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.secondaryNavy,
                 height: 1.6,
               ),

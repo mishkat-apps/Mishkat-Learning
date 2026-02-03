@@ -176,7 +176,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
         onChanged: (val) => ref.read(catalogProvider.notifier).setSearchQuery(val),
         decoration: InputDecoration(
           hintText: 'What do you want to learn today?',
-          hintStyle: GoogleFonts.roboto(color: Colors.grey, fontSize: 14),
+          hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
           prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.radiantGold),
           suffixIcon: isWide 
             ? null 
@@ -298,8 +298,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
           children: [
             Text(
               state.selectedCategory == 'All' ? 'All Courses' : state.selectedCategory,
-              style: GoogleFonts.montserrat(
-                fontSize: 22,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppTheme.secondaryNavy,
               ),
@@ -307,7 +306,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
             if (state.searchQuery.isNotEmpty)
               Text(
                 'Showing results for "${state.searchQuery}"',
-                style: GoogleFonts.roboto(color: Colors.grey, fontSize: 13),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
               ),
           ],
         ),
@@ -335,7 +334,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                 const SizedBox(height: 60),
                 Icon(Icons.search_off_rounded, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
                 const SizedBox(height: 16),
-                Text('No courses found', style: GoogleFonts.roboto(color: Colors.grey)),
+                Text('No courses found', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
               ],
             ),
           );
@@ -462,9 +461,7 @@ class _SidebarFilters extends ConsumerWidget {
           children: [
             Text(
               'FILTERS',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 letterSpacing: 2,
                 color: AppTheme.radiantGold,
               ),
@@ -584,8 +581,7 @@ class _CategoryTile extends StatelessWidget {
             ],
             Text(
               label,
-              style: GoogleFonts.roboto(
-                fontSize: 14,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 color: isSelected ? AppTheme.secondaryNavy : AppTheme.slateGrey,
               ),
@@ -609,8 +605,7 @@ class _FilterSection extends StatelessWidget {
       children: [
         Text(
           title,
-          style: GoogleFonts.montserrat(
-            fontSize: 14,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
             color: AppTheme.secondaryNavy,
           ),
@@ -643,7 +638,18 @@ class _ModernCourseCard extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: () => context.push('/courses/${course.slug}'),
+        onTap: () {
+          if (course.slug.isNotEmpty) {
+            context.goNamed(
+              'course_details',
+              pathParameters: {'courseSlug': course.slug},
+            );
+          } else {
+             ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Course details currently unavailable.')),
+            );
+          }
+        },
         borderRadius: BorderRadius.circular(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,11 +678,9 @@ class _ModernCourseCard extends StatelessWidget {
                 children: [
                   Text(
                     course.category.toUpperCase(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 9,
                       color: AppTheme.radiantGold,
-                      letterSpacing: 1,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -684,8 +688,7 @@ class _ModernCourseCard extends StatelessWidget {
                     course.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 15,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.secondaryNavy,
                     ),
@@ -697,13 +700,12 @@ class _ModernCourseCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         course.rating.toString(),
-                        style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       Text(
                         course.isFree ? 'FREE' : '${course.price.toInt()} USD',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: AppTheme.deepEmerald,
                         ),
