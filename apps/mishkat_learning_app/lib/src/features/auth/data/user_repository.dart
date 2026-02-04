@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
 
 class MishkatUser {
   final String id;
@@ -46,8 +48,9 @@ class MishkatUser {
 
 class UserRepository {
   final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
 
-  UserRepository(this._firestore);
+  UserRepository(this._firestore, this._storage);
 
   Stream<MishkatUser?> watchProfile(String uid) {
     return _firestore
@@ -86,16 +89,38 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  Future<String> uploadProfilePicture(String uid, dynamic file) async {
-    // Stub for image upload - in a real app this would use Firebase Storage
-    debugPrint('Uploading profile picture for $uid...');
-    return ''; // Return dummy URL or handle as needed
+  Future<String> uploadProfilePicture(String uid, Uint8List bytes) async {
+    try {
+      final ref = _storage.ref().child('profiles').child('${uid}_avatar.jpg');
+      
+      // Upload the bytes
+      final uploadTask = await ref.putData(
+        bytes,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+      
+      // Update Firestore
+      await _firestore.collection('users').doc(uid).update({
+        'photoUrl': downloadUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      
+      return downloadUrl;
+    } catch (e) {
+      debugPrint('Error uploading profile picture: $e');
+      rethrow;
+    }
   }
 
 }
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(FirebaseFirestore.instance);
+  return UserRepository(
+    FirebaseFirestore.instance,
+    FirebaseStorage.instance,
+  );
 });
 
 final userProfileProvider = StreamProvider.family<MishkatUser?, String>((ref, uid) {
