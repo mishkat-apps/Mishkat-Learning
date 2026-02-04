@@ -11,7 +11,10 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.admin == true || 
-        request.auth.uid == 'opRxlWwXj7aMNkiScEn9nOSKryp1' // Bootstrap Admin (admin@mishkatlearning.com)
+        request.auth.uid in [
+          '8JHu1skI8gR8dAtEACwR87Yvc8q1', // admin@mishkatlearning.com
+          'hsevldgtmmfkZ6DqfMjwegawZhT2'  // kazimb@gmail.com
+        ]
       );
     }
     

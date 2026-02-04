@@ -178,10 +178,17 @@ class Lesson {
 
   factory Lesson.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
+    
+    // Auto-generate slug if missing
+    String slug = data['slug'] ?? '';
+    if (slug.isEmpty) {
+      slug = (data['title'] as String).toLowerCase().replaceAll(' ', '-').replaceAll(RegExp(r'[^a-z0-9-]'), '');
+    }
+
     return Lesson(
       id: doc.id,
       title: data['title'] ?? '',
-      slug: data['slug'] ?? '',
+      slug: slug,
       order: data['order'] ?? 0,
       duration: data['duration'] ?? '',
     );
@@ -211,10 +218,17 @@ class LessonPart {
 
   factory LessonPart.fromFirestore(DocumentSnapshot doc) {
     Map data = doc.data() as Map<String, dynamic>;
+
+    // Auto-generate slug if missing
+    String slug = data['slug'] ?? '';
+    if (slug.isEmpty) {
+      slug = (data['title'] as String).toLowerCase().replaceAll(' ', '-').replaceAll(RegExp(r'[^a-z0-9-]'), '');
+    }
+
     return LessonPart(
       id: doc.id,
       title: data['title'] ?? '',
-      slug: data['slug'] ?? '',
+      slug: slug,
       order: data['order'] ?? 0,
       duration: data['duration'] ?? '',
       videoUrl: data['videoUrl'],

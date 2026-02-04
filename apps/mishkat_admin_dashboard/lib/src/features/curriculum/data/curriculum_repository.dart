@@ -64,8 +64,10 @@ class CurriculumRepository {
   // --- Actions ---
 
   Future<void> addLesson(String courseId, String title, int order) async {
+    final slug = title.toLowerCase().replaceAll(' ', '-').replaceAll(RegExp(r'[^a-z0-9-]'), '');
     await _firestore.collection('courses').doc(courseId).collection('lessons').add({
       'title': title,
+      'slug': slug,
       'order': order,
       'duration': '0m',
       'createdAt': FieldValue.serverTimestamp(),
